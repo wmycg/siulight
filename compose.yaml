@@ -1,0 +1,23 @@
+name: siulight-dev
+services:
+  mysql:
+    image: mysql:8.4
+    restart: unless-stopped
+    ports:
+      - '127.0.0.1:${MYSQL_PORT:-3308}:3306'
+    environment:
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-siulight}
+      MYSQL_USER: ${MYSQL_USER:-siulight}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-siulight_dev}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-local_root_dev}
+    command: ['--character-set-server=utf8mb4', '--collation-server=utf8mb4_unicode_ci']
+    volumes:
+      - mysql-data:/var/lib/mysql
+    healthcheck:
+      test: ['CMD-SHELL', 'mysqladmin ping -h localhost -u root -p$$MYSQL_ROOT_PASSWORD --silent']
+      interval: 3s
+      timeout: 5s
+      retries: 30
+      start_period: 20s
+volumes:
+  mysql-data:

@@ -1,0 +1,66 @@
+export type Role = 'member' | 'admin' | 'superadmin';
+export interface Member {
+  id: string;
+  name: string;
+  color: string;
+  bio: string;
+}
+export interface User extends Member {
+  email: string;
+  role: Role;
+}
+export interface Milestone {
+  id: string;
+  title: string;
+  body: string;
+  date: string;
+  kind: 'personal' | 'club';
+  category: string;
+  image: string;
+  authorId: string;
+  author: Member;
+  participants: Member[];
+  likes: number;
+  liked: boolean;
+}
+export interface ClubEvent {
+  id: string;
+  title: string;
+  date: string;
+  place: string;
+  brief: string;
+  body: string;
+  image: string;
+  category: string;
+  capacity: number;
+  attendees: number;
+  joined: boolean;
+}
+export interface Application {
+  id: string;
+  nickname: string;
+  realName: string;
+  studentId: string;
+  qq: string;
+  department: string;
+  note: string;
+  status: 'pending' | 'contacted' | 'accepted';
+  createdAt: string;
+}
+export interface AuditLog {
+  id: number;
+  actor: string;
+  action: string;
+  createdAt: string;
+}
+export interface Page<T> {
+  items: T[];
+  total: number;
+  page: number;
+  pages: number;
+}
+export interface Stats {
+  members: number;
+  milestones: number;
+  events: number;
+}

@@ -1,0 +1,14 @@
+node_modules/
+dist/
+.env
+.env.*
+!.env.example
+output/
+.DS_Store
+*.log
+
+storage/
+
+.playwright-cli/
+
+.pnpm-store/

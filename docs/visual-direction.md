@@ -36,3 +36,26 @@
 生成提示词：
 
 > Use case: illustration-story. Asset: wide editorial illustration for a Chinese university anime/comics/photography club event page and memory scrapbook. Draw a beautiful contemporary Japanese anime promotional scene, crisp expressive cel shading and precise line art, not watercolor. Two fully clothed university-age friends at a sunlit creative club desk, one dark-haired girl sketching an original anime character in a sketchbook and one short-haired boy inspecting a camera beside her; friendly natural interaction, tasteful modern casual outfits in cream, cocoa and muted red. A small adorable honey blonde cat-ear hoodie mascot plush with red eyes sits on the desk between postcards, red event tickets without text, a camera, ink pens and washi tape. Compose characters in the right two thirds, desk fills foreground, clubroom shelves softly detailed in background, warm cream sunlight and muted crimson paper decorations, leafy courtyard visible through window, confident polished anime art direction. Clean harmonious composition, youthful, welcoming, bright and warm; strong vermilion accents reflecting a red circular club emblem, no green cast, no huge empty sky. Wide 1536x1024, no text, no typography, no logos, no watermarks, no UI.
+
+## 连续滚动首页（2026-09-13）
+
+动效前的回退点：`a60fcd9`。新首页以奶油色纸面、社团红圆环和原有猫耳角色构成连续舞台；不引入 3D 场景。
+
+- **初见 → 同频**：保留品牌首屏，文字与角色沿相反方向散开，徽标和细线同心圆在中央浮现。
+- **同频 → 相遇**：介绍文字消隐，活动图片从右侧进入；每场真实活动占一幕，保留日期、地点、详情和全部活动入口。
+- **回忆墙**：真实纪念以照片与信纸混排，桌面三列、手机两列，交错方向流动。依据内容数量延长停留段，依据实际列高计算位移，使后面的纪念也能进入视野。首页最多预览十二条，完整记录进入纪念册查看。一两条时改为集中展示。
+- **次元 → 有你**：五个部门像照片一样展开，再向中央收拢，衔接红色圆环与角色，落在加入社团的行动入口。
+
+实现分为滚动编排 `scroll-story.tsx`、幕的显隐 `frame.tsx`、场景内容 `scenes.tsx` 和纪念排布 `memory-wall.tsx`。文档滚动位置驱动 Motion 值，画面固定在导航下方；隐藏首页滚动条，保留右侧章节定位，移除底部提示、页码与翻页栏，场景延伸到视口底部。非当前幕设置 `inert`，避免键盘和读屏进入不可见内容。切换路由时恢复常规布局；系统开启减少动态效果、或手机横屏高度不足时显示普通纵向首页。
+
+### 逐幕停顿与手势节奏
+
+普通场景切换时保留约 0.14 秒的短暂停顿，持续滚动可以继续前进，不再等待整个惯性手势结束。快速输入按目标幕连续推进，不会因为上一幕尚未滚到位而重复停在原地。一次触摸划动翻一幕，新的划动可快速续接。纪念册内部以 2.5 倍输入速度流动，在段落两端轻停。右侧章节可直接定位，键盘支持方向键、PageUp/PageDown、Home/End。弹窗中的滚动、表单输入及缩放手势保持可用；离开首页卸载所有手势监听。
+
+### 手机画面与可用视口
+
+移动端样式独立于桌面：首尾用文案与角色分区排版，活动图片占据剩余高度，纪念卡保留两侧页边距，五个部门以两列加一张居中的照片展开并合拢。使用 VisualViewport 的实际高度，尺寸变化时保留章节进度；表单弹窗和双指缩放期间不重排背景。底部交互考虑安全区。
+
+### 刷新与分段节奏修正
+
+HTML 入口提前设置手动滚动恢复，路由布局在绘制前复位；滚动舞台的 Motion 值从零直接初始化，关闭浏览器滚动锚定，并取消沉浸首屏的位移入场，避免刷新时跨幕闪动。部门页单独保留约 0.65 秒落位时间，并阻断进入时同一手势的剩余惯性；下一次新手势可继续。其他普通场景仍保留 0.14 秒轻停顿。

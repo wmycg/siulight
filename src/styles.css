@@ -9,6 +9,8 @@
 @import './styles/responsive.css';
 @import './styles/brand-experience.css';
 @import './styles/collections.css';
+@import './styles/cinema.css';
+@import './styles/cinema-mobile.css';
 
 @theme inline {
   --color-background: var(--background);

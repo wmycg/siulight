@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useLayoutEffect, useState } from 'react';
 import { Link, NavLink, Outlet, useLocation } from 'react-router-dom';
 import { ArrowUpRight, Menu, X, LogOut, Settings } from 'lucide-react';
 import { Button } from './ui/button';
@@ -33,7 +33,7 @@ export function Layout() {
   const { user, openLogin, logout } = useAuth();
   const [menu, setMenu] = useState(false);
   const location = useLocation();
-  useEffect(() => {
+  useLayoutEffect(() => {
     setMenu(false);
     window.scrollTo({ top: 0, behavior: 'instant' });
     const label = navItems.find((i) => i.to === location.pathname)?.label || '微光漫摄';

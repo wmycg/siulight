@@ -21,6 +21,7 @@ const DepartmentsPage = lazy(() =>
 );
 const JoinPage = lazy(() => import('@/pages/join').then((m) => ({ default: m.JoinPage })));
 const AdminPage = lazy(() => import('@/pages/admin').then((m) => ({ default: m.AdminPage })));
+window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
 createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <QueryClientProvider client={queryClient}>

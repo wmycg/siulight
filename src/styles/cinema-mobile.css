@@ -1,0 +1,491 @@
+/* Portrait layouts use the actual stage height; all actions remain in the safe viewport. */
+@media (max-width: 760px) {
+  .cinema-frame h2 {
+    font-size: clamp(29px, 7.7vw, 46px);
+  }
+  .cinema-frame p {
+    font-size: 11px;
+  }
+  .cinema-frame .eyebrow {
+    font-size: 8px;
+  }
+  .cinema-frame .text-arrow {
+    font-size: 10px;
+  }
+  .cinema-chapters {
+    display: none;
+  }
+
+  .cinema-opening .opening-composition {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    padding: clamp(18px, 4cqh, 36px) 24px 0;
+  }
+  .cinema-opening .opening-copy {
+    position: relative;
+    inset: auto;
+    width: 100%;
+    flex-shrink: 0;
+    transform: none;
+  }
+  .cinema-opening .opening-kicker {
+    margin-bottom: 12px;
+    font-size: 8px;
+  }
+  .cinema-opening .opening-kicker i {
+    display: inline;
+    font-size: 7px;
+  }
+  .cinema-opening .opening h1 {
+    font-size: clamp(44px, 12vw, 76px);
+  }
+  .cinema-opening .opening-line {
+    font-size: clamp(20px, 5.4vw, 30px);
+    line-height: 1.6;
+    margin-top: 12px;
+  }
+  .cinema-opening .opening-line > span {
+    display: inline;
+  }
+  .cinema-opening .opening-description {
+    font-size: 11px;
+    line-height: 1.85;
+    margin-top: 12px;
+    max-width: 100%;
+  }
+  .cinema-opening .opening-actions {
+    gap: 16px;
+    margin-top: 16px;
+    flex-wrap: wrap;
+    flex-direction: row;
+    align-items: center;
+  }
+  .cinema-opening .opening-actions [data-slot='button'] {
+    height: 42px;
+    min-height: 42px;
+    font-size: 10px;
+    padding-inline: 15px;
+  }
+  .cinema-opening .opening-secondary {
+    font-size: 9px;
+    min-height: 42px;
+  }
+  .cinema-opening .opening-stage {
+    position: relative;
+    inset: auto;
+    width: 100%;
+    height: auto;
+    flex: 1;
+    min-height: 0;
+    margin-top: 18px;
+  }
+  .cinema-opening .opening-character-depth {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    max-width: none;
+  }
+  .cinema-opening .opening-character {
+    height: 130%;
+    width: 100%;
+    object-fit: contain;
+    object-position: center top;
+  }
+  .cinema-opening .opening-orbit {
+    top: 6%;
+    width: 90%;
+    left: 5%;
+    border-width: 32px;
+  }
+  .cinema-opening .opening-orbit-thin {
+    width: 100%;
+    top: 0;
+    left: 0;
+  }
+  .cinema-opening .opening-greeting {
+    left: auto;
+    right: 0;
+    top: 7%;
+    width: 68px;
+    height: 68px;
+    font-size: 14px;
+    padding: 8px;
+  }
+  .cinema-opening .opening-spark-one {
+    font-size: 26px;
+  }
+  .cinema-opening .opening-wordmark {
+    bottom: 10%;
+    font-size: 31vw;
+  }
+  .cinema-introduction {
+    height: 100%;
+    padding: 30px 24px;
+  }
+  .cinema-intro-copy .cinema-seal {
+    width: 75px;
+    height: 75px;
+    margin-bottom: 26px;
+  }
+  .cinema-intro-copy h2 {
+    margin-top: 18px;
+    line-height: 1.7;
+  }
+  .cinema-intro-copy p {
+    margin-top: 22px;
+    line-height: 2.2;
+  }
+  .cinema-frequency {
+    width: 140vw;
+  }
+  .cinema-margin-note {
+    left: 12px;
+    font-size: 6px;
+    opacity: 0.7;
+  }
+  .cinema-event {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 20px;
+    padding: 24px 24px max(24px, env(safe-area-inset-bottom));
+  }
+  .cinema-event-image {
+    position: relative;
+    inset: auto;
+    height: auto;
+    flex: 1;
+    min-height: 120px;
+    max-height: 52%;
+    order: 2;
+    margin-top: 0;
+  }
+  .cinema-event-image:after {
+    background: linear-gradient(0deg, #35242644, transparent 40%);
+  }
+  .cinema-event-image img {
+    object-position: 65% 55%;
+  }
+  .cinema-photo-caption {
+    bottom: 12px;
+    right: 12px;
+    font-size: 7px;
+  }
+  .cinema-event-copy {
+    position: relative;
+    left: auto;
+    top: auto;
+    translate: none;
+    width: 100%;
+    display: grid;
+    grid-template-columns: 54px minmax(0, 1fr);
+    column-gap: 14px;
+  }
+  .cinema-event-copy > .eyebrow,
+  .cinema-event-prelude,
+  .cinema-scene-actions {
+    grid-column: 1 / -1;
+  }
+  .cinema-event-copy .cinema-event-prelude {
+    font-size: 25px;
+    margin-top: 5px;
+    margin-bottom: 17px;
+    line-height: 1.5;
+  }
+  .cinema-event-copy time {
+    grid-column: 1;
+    grid-row: 3 / 5;
+    flex-direction: column;
+    gap: 6px;
+    margin: 0;
+    align-items: flex-start;
+    border-right: 1px solid #d7bfae;
+  }
+  .cinema-event-copy time b {
+    font-size: 42px;
+  }
+  .cinema-event-copy time > span {
+    font-size: 8px;
+    letter-spacing: 0;
+  }
+  .cinema-event-copy time i {
+    font-size: 9px;
+    margin-top: 5px;
+  }
+  .cinema-event-copy h2 {
+    grid-column: 2;
+    margin-top: 0;
+    font-size: clamp(19px, 5.5vw, 27px);
+    line-height: 1.6;
+    text-wrap: initial;
+  }
+  .cinema-event-place {
+    grid-column: 2;
+    margin-top: 8px;
+    line-height: 1.7 !important;
+    font-size: 10px !important;
+  }
+  .cinema-scene-actions {
+    margin-top: 17px;
+    gap: 23px;
+  }
+  .cinema-scene-actions [data-slot='button'] {
+    min-height: 42px;
+    font-size: 11px;
+  }
+  .cinema-event-serial {
+    font-size: 200px;
+    bottom: -20px;
+    left: auto;
+    right: 0;
+  }
+  .cinema-memories {
+    height: 100%;
+  }
+  .cinema-memory-heading {
+    padding: 26px 24px 45px;
+  }
+  .cinema-memory-heading h2 {
+    margin-top: 8px;
+    font-size: 32px;
+  }
+  .cinema-memory-heading p {
+    margin-top: 6px;
+  }
+  .cinema-memory-river {
+    inset: 185px 16px -260px;
+    gap: 14px;
+  }
+  .cinema-memory-column {
+    gap: 18px;
+    max-width: 240px;
+  }
+  .cinema-memory-note {
+    padding: 10px;
+  }
+  .cinema-memory-note h3 {
+    font-size: 16px;
+    overflow-wrap: anywhere;
+  }
+  .cinema-memory-note p {
+    font-size: 10px;
+    -webkit-line-clamp: 4;
+  }
+  .cinema-note-meta {
+    font-size: 8px;
+    gap: 4px;
+  }
+  .cinema-note-author {
+    font-size: 9px;
+    gap: 4px;
+    flex-wrap: wrap;
+  }
+  .cinema-note-author i {
+    width: 21px;
+    height: 21px;
+  }
+  .cinema-memory-note.with-lines {
+    padding: 20px 15px;
+  }
+  .cinema-memory-link {
+    bottom: max(18px, env(safe-area-inset-bottom));
+    font-size: 11px;
+    padding: 13px 18px;
+  }
+  .cinema-memories.is-small .cinema-memory-river {
+    inset: 200px 24px 40px;
+  }
+  .cinema-memories.is-small .cinema-memory-column {
+    max-width: 320px;
+  }
+  .cinema-worlds {
+    height: 100%;
+  }
+  .cinema-world-heading {
+    top: 7%;
+    padding: 0 24px;
+  }
+  .cinema-world-heading h2 {
+    font-size: 34px;
+    line-height: 1.55;
+  }
+  .cinema-mobile-break {
+    display: block;
+  }
+  .cinema-world-fan {
+    top: 38%;
+    height: 48%;
+  }
+  .cinema-world-card {
+    width: 40vw;
+    left: -20vw;
+    height: 28%;
+    transform-origin: center;
+  }
+  .cinema-world-card a {
+    padding: 5px;
+    display: grid;
+    grid-template-columns: 35% minmax(0, 1fr);
+    align-items: center;
+    gap: 7px;
+  }
+  .cinema-world-card img {
+    height: 100%;
+    width: 100%;
+    min-height: 0;
+  }
+  .cinema-world-card a > span {
+    padding: 4px 0;
+  }
+  .cinema-world-card small {
+    display: none;
+  }
+  .cinema-world-card b {
+    font-size: 13px;
+    line-height: 1.6;
+    margin: 0;
+  }
+  .cinema-world-card svg {
+    display: none;
+  }
+  .cinema-world-link {
+    bottom: 5%;
+  }
+  .cinema-closing {
+    height: 100%;
+    display: grid;
+    grid-template-rows: auto minmax(0, 1fr) auto;
+    padding: 24px 24px max(12px, env(safe-area-inset-bottom));
+  }
+  .cinema-closing-copy {
+    position: relative;
+    inset: auto;
+    translate: none;
+    width: 100%;
+  }
+  .cinema-closing-copy .cinema-seal {
+    height: 45px;
+    width: 45px;
+    margin-bottom: 12px;
+  }
+  .cinema-closing-copy h2 {
+    margin-top: 12px;
+    font-size: clamp(31px, 9vw, 40px);
+  }
+  .cinema-closing-copy p {
+    font-size: 11px;
+    margin-top: 12px;
+  }
+  .cinema-closing-copy [data-slot='button'] {
+    min-height: 44px;
+    font-size: 10px;
+    margin-top: 18px;
+  }
+  .cinema-closing-character {
+    position: relative;
+    inset: auto;
+    min-height: 0;
+    height: 100%;
+    width: 100%;
+    object-fit: cover;
+    object-position: center top;
+    padding-top: 16px;
+    z-index: 1;
+  }
+  .cinema-closing-ring {
+    width: 90vw;
+    border-width: 35px;
+    top: auto;
+    bottom: -18%;
+    right: -15%;
+  }
+  .cinema-endnote {
+    position: relative;
+    inset: auto;
+    background: transparent;
+    padding: 6px 0;
+    font-size: 8px;
+  }
+  .cinema-endnote > span:nth-child(2) {
+    display: none;
+  }
+}
+@media (max-height: 740px) and (max-width: 760px) {
+  .cinema-opening .opening h1 {
+    font-size: 42px;
+  }
+  .cinema-opening .opening-kicker {
+    margin-bottom: 5px;
+  }
+  .cinema-opening .opening-line {
+    font-size: 19px;
+    margin-top: 5px;
+  }
+  .cinema-opening .opening-description {
+    font-size: 10px;
+    margin-top: 6px;
+  }
+  .cinema-opening .opening-actions {
+    margin-top: 8px;
+    gap: 10px;
+  }
+  .cinema-opening .opening-greeting {
+    display: none;
+  }
+  .cinema-intro-copy .cinema-seal {
+    width: 60px;
+    height: 60px;
+    margin-bottom: 14px;
+  }
+  .cinema-intro-copy h2 {
+    font-size: 28px;
+    margin-top: 12px;
+  }
+  .cinema-intro-copy p {
+    font-size: 10px;
+    margin-top: 14px;
+  }
+  .cinema-intro-copy .text-arrow {
+    margin-top: 16px;
+  }
+  .cinema-event {
+    padding-top: 16px;
+  }
+  .cinema-event-copy .cinema-event-prelude {
+    font-size: 22px;
+    margin-bottom: 10px;
+  }
+  .cinema-event-copy h2 {
+    font-size: 19px;
+  }
+  .cinema-scene-actions {
+    margin-top: 12px;
+  }
+  .cinema-world-heading h2 {
+    font-size: 29px;
+  }
+  .cinema-world-heading {
+    top: 5%;
+  }
+  .cinema-world-card b {
+    font-size: 11px;
+  }
+  .cinema-closing-copy .cinema-seal {
+    width: 40px;
+    height: 40px;
+    margin-bottom: 10px;
+  }
+  .cinema-closing-copy h2 {
+    font-size: 31px;
+    margin-top: 8px;
+  }
+  .cinema-closing-copy p {
+    margin-top: 10px;
+  }
+  .cinema-closing-copy [data-slot='button'] {
+    margin-top: 12px;
+  }
+}

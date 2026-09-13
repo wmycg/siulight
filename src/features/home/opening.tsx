@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 const ease = [0.22, 1, 0.36, 1] as const;
 
 /** Pointer depth is local to the artwork; scrolling always remains native. */
-export function Opening() {
+export function Opening({ immersive = false }: { immersive?: boolean }) {
   const target = useRef<HTMLElement>(null);
   const reduced = useReducedMotion();
   const { scrollYProgress } = useScroll({ target, offset: ['start start', 'end start'] });
@@ -35,7 +35,7 @@ export function Opening() {
       <motion.div
         className="opening-wordmark"
         aria-hidden="true"
-        style={reduced ? undefined : { x: typeX }}
+        style={reduced || immersive ? undefined : { x: typeX }}
       >
         SIULIGHT
       </motion.div>
@@ -44,7 +44,7 @@ export function Opening() {
         <div className="opening-copy">
           <motion.p
             className="opening-kicker"
-            initial={reduced ? false : { opacity: 0 }}
+            initial={reduced || immersive ? false : { opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.7 }}
           >
@@ -54,7 +54,7 @@ export function Opening() {
             {['微', '光', '漫', '摄'].map((letter, i) => (
               <span className="opening-letter-mask" key={letter} aria-hidden="true">
                 <motion.span
-                  initial={reduced ? false : { y: '110%', rotate: 8 }}
+                  initial={reduced || immersive ? false : { y: '110%', rotate: 8 }}
                   animate={{ y: 0, rotate: 0 }}
                   transition={{ delay: 0.1 + i * 0.065, duration: 0.85, ease }}
                 >
@@ -67,7 +67,7 @@ export function Opening() {
             </span>
           </h1>
           <motion.div
-            initial={reduced ? false : { opacity: 0, y: 18 }}
+            initial={reduced || immersive ? false : { opacity: 0, y: 18 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4, duration: 0.7, ease }}
           >
@@ -93,7 +93,7 @@ export function Opening() {
         </div>
         <motion.div
           className="opening-stage"
-          style={reduced ? undefined : { y: artY }}
+          style={reduced || immersive ? undefined : { y: artY }}
           aria-hidden="true"
         >
           <motion.div
@@ -113,14 +113,14 @@ export function Opening() {
               width="1024"
               height="1536"
               fetchPriority="high"
-              initial={reduced ? false : { opacity: 0, y: 55, rotate: -4 }}
+              initial={reduced || immersive ? false : { opacity: 0, y: 55, rotate: -4 }}
               animate={{ opacity: 1, y: 0, rotate: 0 }}
               transition={{ delay: 0.12, duration: 1.1, ease }}
             />
           </motion.div>
           <motion.span
             className="opening-greeting"
-            initial={reduced ? false : { scale: 0.7, opacity: 0, rotate: -12 }}
+            initial={reduced || immersive ? false : { scale: 0.7, opacity: 0, rotate: -12 }}
             animate={{ scale: 1, opacity: 1, rotate: -8 }}
             transition={{ delay: 0.8, duration: 0.5, ease }}
           >

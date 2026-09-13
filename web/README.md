@@ -23,6 +23,30 @@ npm run preview  # 预览已构建的 dist/
 npm run format   # 使用 Prettier 格式化 CSS 和 src/
 ```
 
+## Docker 部署
+
+项目根目录提供了 `docker-compose.yml`，会启动 MySQL、Spring Boot 和 Nginx 三个服务。服务器安装 Docker 和 Docker Compose 后执行：
+
+```bash
+cp .env.example .env
+# 编辑 .env，至少修改 MYSQL_ROOT_PASSWORD
+docker compose up -d --build
+docker compose ps
+```
+
+浏览器访问服务器的 `80` 端口。Nginx 会托管前端静态文件，并把 `/api/**` 转发给后端；History 路由刷新也会回退到 `index.html`。如果服务器的 80 端口已被占用，将 `docker-compose.yml` 中的 `80:80` 改成例如 `8081:80`。
+
+首次启动会创建 `siulightdatabase` 数据库，后端启动时会执行 `club/src/main/resources/schema.sql` 创建 `milestones` 表。要迁移现有本地数据，先导出数据库，再导入容器：
+
+```bash
+mysqldump -u root -p siulightdatabase > siulightdatabase.sql
+docker compose up -d db
+docker compose exec -T db sh -c 'exec mysql -uroot -p"$MYSQL_ROOT_PASSWORD" "$MYSQL_DATABASE"' < siulightdatabase.sql
+docker compose up -d --build backend frontend
+```
+
+数据库数据保存在 Docker volume `mysql_data` 中。不要使用 `docker compose down -v`，否则会删除数据库卷。
+
 ## 目录结构
 
 ```text
@@ -30,62 +54,57 @@ npm run format   # 使用 Prettier 格式化 CSS 和 src/
 ├─ index.html                 # Vite HTML 入口
 ├─ package.json               # 脚本和依赖
 ├─ vite.config.mjs            # Vite + Vue 插件配置
-├─ css/
-│  └─ styles.css              # 全局设计令牌、reset 和无障碍规则
-├─ image/                     # 页面使用的图片资源
 └─ src/
    ├─ main.js                 # 创建 Vue 应用并挂载全局 CSS
-   ├─ App.vue                 # 应用外壳、hash 路由、主题和页面切换
-   ├─ components/             # 可复用的展示组件（样式写在各自 SFC 的 <style> 中）
-   │  ├─ SiteHeader.vue       # 顶部导航、主题切换、快捷操作
-   │  ├─ SiteFooter.vue       # 页脚信息
-   │  ├─ Eyebrow.vue          # 小型英文栏目标签
-   │  ├─ SectionHeading.vue   # 区块标题
-   │  ├─ DepartmentCard.vue   # 部门档案卡片
-   │  └─ EventCard.vue        # 活动条目卡片
-   ├─ data/                   # 静态内容
-   │  ├─ club.js              # 社团名称、简介和统计信息
-   │  ├─ departments.js       # 部门列表（名称、简介和档案编号）
-   │  └─ events.js            # 活动列表（稳定 ID、日期、标题、地点和简介）
-   └─ views/                  # 五个页面视图
-      ├─ HomeView.vue         # 首页
-      ├─ ClubView.vue         # 关于社团
-      ├─ DepartmentsView.vue  # 部门档案
-      ├─ EventsView.vue       # 活动日历
-      └─ JoinView.vue         # 加入我们
+   ├─ app/                    # 应用外壳与路由配置
+   │  ├─ App.vue
+   │  └─ routes.js
+   ├─ shared/                 # 跨业务域复用代码
+   │  ├─ components/          # 通用排版组件
+   │  ├─ layout/              # 顶部导航和页脚
+   │  └─ services/api.js      # 统一 HTTP 请求
+   ├─ modules/                # 按后端业务域组织功能
+   │  ├─ club/                # 首页、关于社团和社团内容
+   │  ├─ department/          # 部门页面、卡片和部门内容
+   │  ├─ events/              # 活动页面、卡片和活动服务
+   │  ├─ submit/              # 加入申请页面和提交服务
+   │  ├─ milestone/           # 里程碑页面、时间轴和里程碑服务
+   │  └─ admin/               # 后台页面、工作区和管理员服务
+   └─ assets/                 # 图片和全局样式
 ```
 
 ## 页面和路由
 
-项目没有使用 Vue Router，而是使用 URL hash 实现单页导航。`App.vue` 中的 `routeViews` 是唯一的路由映射表。
+项目没有使用 Vue Router，而是使用 History API 实现轻量单页导航。`src/app/routes.js` 中的 `routeViews` 是唯一的路由映射表。
 
-| Hash | 页面 | 顶栏编号 | 状态代码 |
-| --- | --- | --- | --- |
-| `#home` | 首页 / BASE CAMP | 01 | `INDEX` |
-| `#club` | 关于社团 / PROFILE | 02 | `ABOUT` |
-| `#works` | 部门档案 / DEPARTMENTS | 03 | `UNITS` |
-| `#events` | 活动日历 / SCHEDULE | 04 | `EVENTS` |
-| `#join` | 加入我们 / OPEN CALL | 05 | `JOIN` |
+| Path           | 页面                   | 顶栏编号 | 状态代码  |
+| -------------- | ---------------------- | -------- | --------- |
+| `/`            | 首页 / BASE CAMP       | 01       | `INDEX`   |
+| `/about`       | 关于社团 / PROFILE     | 02       | `ABOUT`   |
+| `/departments` | 部门档案 / DEPARTMENTS | 03       | `UNITS`   |
+| `/events`      | 活动日历 / SCHEDULE    | 04       | `EVENTS`  |
+| `/join`        | 加入我们 / OPEN CALL   | 05       | `JOIN`    |
+| `/milestones`  | 里程碑 / MILESTONES    | 06       | `ARCHIVE` |
 
-直接访问不存在的 hash 会回退到 `#home`。导航点击由 `SiteHeader` 发出 `navigate` 事件，`App.vue` 更新 hash 和当前视图；页面内部按钮也通过同一个事件切换页面。
+后台页面使用 `/admin/events`、`/admin/submits`、`/admin/profile` 和 `/admin/managers`。直接访问不存在的路径会回退到首页（`/admin` 下的未知路径回退到 `/admin/events`）。导航点击由 `SiteHeader` 发出 `navigate` 事件，应用外壳更新浏览器路径和当前页面；页面内部按钮也通过同一个事件切换页面。旧的 hash 地址会在首次访问时自动转换为对应的 history 地址。
 
 ## 核心运行机制
 
-### 应用外壳：`src/App.vue`
+### 应用外壳：`src/app/App.vue`
 
-- `route`：当前 hash 路由。
+- `route`：当前 pathname 路由。
 - `currentView`：根据路由选择要渲染的 Vue 组件。
 - `routeMeta`：为顶部状态栏提供编号、页面标题和代码。
 - `theme`：当前主题，值为 `day` 或 `night`。
 - `readTheme()` / `toggleTheme()`：从 `localStorage` 读取和保存主题，键名为 `weiguang-theme`。
-- `Transition` + GSAP：路由切换时执行淡入和水平位移动画，页面进入后再对重点元素做轻微位移动画。
+- `Transition`：使用 Vue 内置 CSS 过渡处理路由切换动画。
 
 ### 主题
 
 主题通过 `document.body.dataset.theme` 注入：
 
 ```html
-<body data-theme="day">
+<body data-theme="day"></body>
 ```
 
 全局 CSS 使用变量控制颜色。夜间主题覆盖 `--paper`、`--ink`、`--muted`、`--coral` 等变量，因此新增组件时应优先使用这些变量，不要写死页面背景和文字颜色。
@@ -96,11 +115,11 @@ npm run format   # 使用 Prettier 格式化 CSS 和 src/
 - `880px` 以下：导航变为可横向滚动的第二行，内容区取消顶部留白。
 - `620px` 以下：缩小标题、状态栏和导航项，并将多列内容压缩为单列。
 
- 样式遵循 Vue 单文件组件规范：组件和页面布局、响应式规则、动效都写在对应 `.vue` 文件的 `<style scoped>` 中；`App.vue` 的外壳和路由过渡使用普通 `<style>`，因为它们需要跨页面生效。`css/styles.css` 只负责字体、颜色变量、reset 和全局无障碍规则。新增组件时不要把局部选择器继续堆到全局 CSS。
+样式遵循 Vue 单文件组件规范：组件和页面布局、响应式规则、动效都写在对应 `.vue` 文件的 `<style scoped>` 中；`src/app/App.vue` 的外壳和路由过渡使用普通 `<style>`，因为它们需要跨页面生效。`src/assets/styles/styles.css` 只负责字体、颜色变量、reset 和全局无障碍规则。新增组件时不要把局部选择器继续堆到全局 CSS。
 
 ## 数据模型
 
-### 社团信息：`src/data/club.js`
+### 社团信息：`src/modules/club/club.js`
 
 ```js
 {
@@ -114,7 +133,7 @@ npm run format   # 使用 Prettier 格式化 CSS 和 src/
 
 首页和关于页面直接读取 `club.intro`、`club.stats` 等字段。
 
-### 部门：`src/data/departments.js`
+### 部门：`src/modules/department/departments.js`
 
 ```js
 {
@@ -125,9 +144,16 @@ npm run format   # 使用 Prettier 格式化 CSS 和 src/
 }
 ```
 
-`DepartmentsView.vue` 会过滤掉缺少 `name` 或 `intro` 的记录，再遍历渲染 `DepartmentCard`。页面不依赖图片字段；如暂无部门资料，会显示明确的空状态而不是渲染空卡片。
+`DepartmentsPage.vue` 会过滤掉缺少 `name` 或 `intro` 的记录，再遍历渲染 `DepartmentCard`。页面不依赖图片字段；如暂无部门资料，会显示明确的空状态而不是渲染空卡片。
 
-### 活动：`src/data/events.js`
+### 里程碑：`src/modules/milestone/` + `/api/milestones`
+
+- `config.js` 集中维护时间轴间距、留言长度和四季月份。
+- `seasons.js` 根据每条铭文的真实日期判断季节，视口指示器跟随中心铭文更新。
+- `src/modules/milestone/services/milestones.js` 通过后端 API 读取和提交铭文，后端按会话和学期执行留言限制。
+- 里程碑列表和留言均通过后端 API 使用 MySQL 持久化；访问者身份由服务端会话维护。
+
+### 活动：`src/modules/events/services/events.js`
 
 ```js
 {
@@ -139,34 +165,34 @@ npm run format   # 使用 Prettier 格式化 CSS 和 src/
 }
 ```
 
-首页展示前三条活动，活动日历展示全部活动。`id` 必须在活动之间保持唯一，不能使用日期作为 key，因为同一天可能有多个活动。填充或修改活动内容时只需更新数据文件，不需要修改卡片组件。
+首页展示前三条活动，活动日历展示全部活动。`id` 必须在活动之间保持唯一，不能使用日期作为 key，因为同一天可能有多个活动。活动内容由后台活动管理维护，不需要修改卡片组件。
 
 ## 组件通信约定
 
-- `App.vue` 向 `SiteHeader` 传入 `activeRoute`、`isNight`。
+- `src/app/App.vue` 向 `SiteHeader` 传入 `activeRoute`、`isNight`。
 - `SiteHeader` 只负责发出 `navigate` 和 `toggle-theme`，不直接修改全局状态。
-- 各个 view 通过 `defineEmits(["navigate"])` 将页面跳转请求交给 `App.vue`。
+- 各个页面通过 `defineEmits(["navigate"])` 将跳转请求交给应用外壳。
 - `DepartmentCard` 和 `EventCard` 通过必填 prop 接收单条数据，保持无状态展示。
 
 新增页面时，按以下顺序接入：
 
-1. 在 `src/views/` 新建 `XxxView.vue`。
-2. 在 `App.vue` 导入组件并加入 `routeViews`。
-3. 在 `routeMeta` 增加页面元信息。
-4. 在 `SiteHeader.vue` 的 `navItems` 增加导航项。
-5. 如果页面需要进入动画，在 `animatePage()` 的 `focusSelector` 中增加选择器。
+1. 在对应的 `src/modules/<domain>/pages/` 新建 `XxxPage.vue`。
+2. 在 `src/app/routes.js` 导入页面并加入 `routeViews`。
+3. 在同一文件的 `routeMeta` 增加页面元信息。
+4. 在 `src/shared/layout/SiteHeader.vue` 的导航项中增加入口。
+5. 页面切换动画由 `src/app/App.vue` 的 CSS `Transition` 统一处理。
 
 ## 图片资源
 
-页面当前使用 `image/1757438527327.png` 作为社团徽章，`image/qq.jpg` 作为加入页面海报。Vue 组件通过相对路径导入图片，替换资源时保持导入变量和 `alt` 文本同步更新。
+页面当前使用 `src/assets/images/1757438527327.png` 作为社团徽章，`src/assets/images/qq.jpg` 作为加入页面海报。Vue 组件通过相对路径导入图片，替换资源时保持导入变量和 `alt` 文本同步更新。
 
 ## 开发注意事项
 
-- 内容数据集中放在 `src/data/`，不要把大量文案直接复制到卡片组件中。
-- 新增颜色、间距或断点时，优先扩展 `css/styles.css` 顶部的 CSS 变量；局部布局规则写入所属 Vue 文件的 `<style>`。
-- 导航依赖 hash，刷新页面后仍能保留当前页面；不要把页面跳转改成普通链接而绕过 `navigate()`。
+- 业务代码集中放在 `src/modules/<domain>/`，跨域组件和请求工具放在 `src/shared/`。
+- 新增颜色、间距或断点时，优先扩展 `src/assets/styles/styles.css` 顶部的 CSS 变量；局部布局规则写入所属 Vue 文件的 `<style>`。
+- 导航依赖 History API。生产服务器需要将前端页面路径 fallback 到 `index.html`，同时保留 `/api/**` 给后端接口；不要把页面跳转改成绕过 `navigate()` 的硬编码逻辑。
 - 主题读取有 `try/catch`，这是为了兼容禁用 `localStorage` 的 `file://` 环境。
-- `JoinView.vue` 中的提交状态目前只是本地 `submitted` ref，尚未连接后端或表单接口。
+- 里程碑留言通过 `/api/milestones` 保存到 MySQL；匿名访客身份由服务端 `HttpSession` 会话维护，不写入浏览器 `localStorage`。
 - `dist/` 是构建产物，不建议直接编辑；修改源码后重新执行 `npm run build`。
 
 ## 验证清单
@@ -179,7 +205,7 @@ npm run build
 
 然后在浏览器中检查：
 
-- 五个 hash 页面都能通过顶部导航打开。
+- 六个公共 history 页面都能通过顶部导航打开。
 - 日间 / 夜间主题切换后刷新仍保持选择。
 - 桌面端和窄屏端导航、卡片没有溢出。
 - 部门或活动数据为空时，页面仍保持稳定布局；填入真实数据后卡片正常显示。

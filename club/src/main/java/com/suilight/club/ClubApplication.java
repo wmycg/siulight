@@ -9,7 +9,8 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
         "com.suilight.club.admin.mapper",
         "com.suilight.club.events.mapper",
         "com.suilight.club.submit.mapper",
-        "com.suilight.club.logs.mapper"
+        "com.suilight.club.logs.mapper",
+        "com.suilight.club.milestone.mapper"
 })
 public class ClubApplication {
 

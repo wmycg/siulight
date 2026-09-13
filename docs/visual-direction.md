@@ -26,3 +26,13 @@
 ## UI 来源
 
 基础组件采用 shadcn/ui 的源码式组件模式，参考官方 [Vite 安装文档](https://ui.shadcn.com/docs/installation/vite) 和 [手动安装文档](https://ui.shadcn.com/docs/installation/manual)，Radix 负责弹窗/标签的键盘操作与焦点管理；主题、间距和圆角按网站品牌定制。配置位于根目录 components.json，可继续使用 shadcn CLI 扩展。
+
+## 2026-09-13 活动与纪念册视觉更新
+
+以现有社团 logo 的绯红、奶油、深棕为统一色系。删除首页海岸大图、sticky 过渡和缩放裁切，社团介绍直接接活动。首页活动采用可手动切换的海报与票根；活动列表复用票根卡片。纪念册采用红色纸签、照片纸边、横线信纸与轻微错落布局，个人/多人仍使用真实参与者。动画限定为海报交叉淡入、文案轻移、列表错落入场、纸页悬停抬起；减少动态效果时停用位移。关闭详情时保留正文到退出动画结束，避免白框闪烁。未引入 3D。
+
+新增项目资产：`public/images/club-days.webp`。使用内置 image_gen 生成，WebP 压缩后随项目保存。用于活动页首图和桌面纪念册封面，不覆盖用户上传的活动或纪念图片。
+
+生成提示词：
+
+> Use case: illustration-story. Asset: wide editorial illustration for a Chinese university anime/comics/photography club event page and memory scrapbook. Draw a beautiful contemporary Japanese anime promotional scene, crisp expressive cel shading and precise line art, not watercolor. Two fully clothed university-age friends at a sunlit creative club desk, one dark-haired girl sketching an original anime character in a sketchbook and one short-haired boy inspecting a camera beside her; friendly natural interaction, tasteful modern casual outfits in cream, cocoa and muted red. A small adorable honey blonde cat-ear hoodie mascot plush with red eyes sits on the desk between postcards, red event tickets without text, a camera, ink pens and washi tape. Compose characters in the right two thirds, desk fills foreground, clubroom shelves softly detailed in background, warm cream sunlight and muted crimson paper decorations, leafy courtyard visible through window, confident polished anime art direction. Clean harmonious composition, youthful, welcoming, bright and warm; strong vermilion accents reflecting a red circular club emblem, no green cast, no huge empty sky. Wide 1536x1024, no text, no typography, no logos, no watermarks, no UI.

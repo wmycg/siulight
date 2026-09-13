@@ -16,11 +16,11 @@
 }
 .field > span {
   font-size: 12px;
-  color: #59614e;
+  color: #61524e;
   font-weight: 500;
 }
 .field > small {
-  color: #666c58;
+  color: #6c5c58;
   font-size: 10px;
 }
 .field input,
@@ -34,7 +34,7 @@
   border-radius: 8px;
   border: 1px solid var(--border);
   padding: 0 30px 0 12px;
-  color: #555f4c;
+  color: #5f504c;
   font: inherit;
   font-size: 13px;
   background-color: var(--background);
@@ -50,7 +50,7 @@
 }
 .micro-copy {
   font-size: 10px;
-  color: #656b59;
+  color: #6b5d59;
   line-height: 1.8;
 }
 .subtle-link {
@@ -61,11 +61,11 @@
 .dialog-symbol {
   width: 44px;
   height: 44px;
-  background: #edf0e3;
+  background: #efe7e4;
   border-radius: 50%;
   display: grid;
   place-items: center;
-  color: #5d6f46;
+  color: #6f4f46;
 }
 .detail-dialog {
   max-width: 670px;
@@ -85,7 +85,7 @@
   padding: 18px 0;
   border-block: 1px solid var(--border);
   font-size: 12px;
-  color: #5e6e4e;
+  color: #6e554e;
 }
 .detail-facts > span {
   display: flex;
@@ -101,7 +101,7 @@
   overflow-wrap: anywhere;
   font-size: 14px;
   line-height: 2.1;
-  color: #606d56;
+  color: #6d5b56;
 }
 .story-people {
   display: flex;
@@ -115,7 +115,7 @@
   align-items: center;
   gap: 7px;
   font-size: 12px;
-  color: #616d56;
+  color: #6d5b56;
 }
 .story-tools {
   display: flex;
@@ -127,16 +127,16 @@
   max-width: 650px;
 }
 .upload-button {
-  border: 1px dashed #c7cfb9;
+  border: 1px dashed #cfbeb9;
   border-radius: 8px;
-  background: #f1f3e9;
+  background: #f2ecea;
   padding: 25px;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 14px;
   width: 100%;
-  color: #5d6f49;
+  color: #6f5149;
   text-align: left;
 }
 .upload-button > span {
@@ -146,7 +146,7 @@
   display: block;
   font-size: 9px;
   margin-top: 5px;
-  color: #636d54;
+  color: #6d5954;
 }
 .upload-preview {
   position: relative;
@@ -169,12 +169,12 @@
   display: flex;
   justify-content: space-between;
   font-size: 12px;
-  color: #59614e;
+  color: #61524e;
   margin-bottom: 10px;
 }
 .participant-heading small {
   font-size: 10px;
-  color: #656c56;
+  color: #6c5b56;
 }
 .participant-options {
   display: flex;
@@ -194,8 +194,8 @@
   border-radius: 30px;
 }
 .participant-options > button.selected {
-  border-color: #a5b194;
-  background: #edf1e4;
+  border-color: #b19a94;
+  background: #efe8e6;
 }
 .participant-options .avatar {
   width: 25px;
@@ -204,7 +204,7 @@
 }
 .participant-options > small {
   font-size: 11px;
-  color: #616d52;
+  color: #6d5852;
 }
 .state-panel {
   min-height: 220px;
@@ -215,21 +215,21 @@
   padding: 45px 20px;
   gap: 18px;
   text-align: center;
-  color: #606e50;
+  color: #6e5650;
 }
 .state-panel > p {
   font-size: 13px;
 }
 .state-panel h3 {
   font: 25px/1.5 var(--serif);
-  color: #58694b;
+  color: #69514b;
 }
 .empty-state {
   min-height: 320px;
 }
 .loading-spark {
   animation: breathing 1.6s ease-in-out infinite;
-  color: #a9b995;
+  color: #b99d95;
 }
 @keyframes breathing {
   50% {

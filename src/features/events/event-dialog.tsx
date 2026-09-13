@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useRetainedValue } from '@/hooks/use-retained-value';
 import { CalendarDays, MapPin, Users, ArrowUpRight } from 'lucide-react';
 import { toast } from 'sonner';
 import type { ClubEvent } from '@shared/types';
@@ -13,11 +14,18 @@ import { Button } from '@/components/ui/button';
 import { formatDate, today } from '@/lib/utils';
 import { send, queryClient } from '@/lib/api';
 import { useAuth } from '@/features/auth/auth-provider';
-export function EventDialog({ event, onClose }: { event: ClubEvent | null; onClose: () => void }) {
+export function EventDialog({
+  event: activeEvent,
+  onClose,
+}: {
+  event: ClubEvent | null;
+  onClose: () => void;
+}) {
+  const event = useRetainedValue(activeEvent);
   const { user, openLogin } = useAuth();
   const [busy, setBusy] = useState(false);
   async function join() {
-    if (!event) return;
+    if (!activeEvent || !event) return;
     if (!user) {
       onClose();
       openLogin();
@@ -36,7 +44,7 @@ export function EventDialog({ event, onClose }: { event: ClubEvent | null; onClo
     }
   }
   return (
-    <Dialog open={!!event} onOpenChange={(v) => !v && onClose()}>
+    <Dialog open={!!activeEvent} onOpenChange={(v) => !v && onClose()}>
       <DialogContent className="detail-dialog">
         {event && (
           <>

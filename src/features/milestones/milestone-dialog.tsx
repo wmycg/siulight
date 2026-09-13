@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useRetainedValue } from '@/hooks/use-retained-value';
 import { Pencil, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import type { Milestone } from '@shared/types';
@@ -15,7 +16,7 @@ import { formatDate } from '@/lib/utils';
 import { api, queryClient } from '@/lib/api';
 import { useAuth } from '@/features/auth/auth-provider';
 export function MilestoneDialog({
-  item,
+  item: activeItem,
   onClose,
   onEdit,
 }: {
@@ -23,11 +24,12 @@ export function MilestoneDialog({
   onClose: () => void;
   onEdit: (m: Milestone) => void;
 }) {
+  const item = useRetainedValue(activeItem);
   const { user } = useAuth();
   const [confirming, setConfirming] = useState(false);
   const [busy, setBusy] = useState(false);
   async function remove() {
-    if (!item) return;
+    if (!activeItem || !item) return;
     setBusy(true);
     try {
       await api(`/milestones/${item.id}`, { method: 'DELETE' });
@@ -44,7 +46,7 @@ export function MilestoneDialog({
   }
   return (
     <Dialog
-      open={!!item}
+      open={!!activeItem}
       onOpenChange={(v) => {
         if (!v) {
           onClose();

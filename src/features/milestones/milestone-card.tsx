@@ -37,6 +37,9 @@ export function MilestoneCard({
     <article
       className={`memory-card ${item.image ? 'has-image' : 'text-memory'} ${compact ? 'compact' : ''}`}
     >
+      <span className="memory-paper-tab" aria-hidden="true">
+        {item.kind === 'club' ? 'OUR STORY' : 'MY CHAPTER'}
+      </span>
       <button
         className="memory-open"
         onClick={() => onOpen(item)}

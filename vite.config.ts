@@ -10,6 +10,7 @@ export default defineConfig({
       '@shared': fileURLToPath(new URL('./shared', import.meta.url)),
     },
   },
+  server: { watch: { ignored: ['**/output/**', '**/.playwright-cli/**'] } },
   build: {
     outDir: 'dist/client',
     rollupOptions: {

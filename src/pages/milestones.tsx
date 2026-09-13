@@ -10,6 +10,7 @@ import { FilterTabs, FilterTabsList, FilterTabsTrigger } from '@/components/filt
 import { Select } from '@/components/field';
 import { Avatar } from '@/components/avatar';
 import { Reveal } from '@/components/reveal';
+import { CollectionReveal } from '@/components/collection-reveal';
 import { Loading, ErrorState, EmptyState } from '@/components/states';
 import { MilestoneCard } from '@/features/milestones/milestone-card';
 import { MilestoneDialog } from '@/features/milestones/milestone-dialog';
@@ -120,13 +121,13 @@ export function MilestonesPage() {
                 我们一起走过的，<span className="serif-accent">闪光日子。</span>
               </p>
             </div>
-            <span className="memory-stamp" aria-hidden="true">
-              OUR LITTLE
-              <br />
-              <b>✦</b>
-              <br />
-              INFINITIES
-            </span>
+            <div className="album-cover-art" aria-hidden="true">
+              <div className="album-cover-photo">
+                <img src="/images/club-days.webp" alt="" />
+                <span>一起，把日常写成故事。</span>
+              </div>
+              <img className="album-cover-seal" src="/images/club-original.png" alt="" />
+            </div>
           </div>
           <div className="intro-bottom">
             <p>
@@ -209,7 +210,7 @@ export function MilestonesPage() {
       ) : memories.error ? (
         <ErrorState error={memories.error} retry={() => memories.refetch()} />
       ) : memories.data?.items.length ? (
-        <div className="timeline">
+        <div className="timeline" key={query.toString()}>
           {Object.entries(groups || {})
             .sort(([a], [b]) => b.localeCompare(a))
             .map(([y, items]) => (
@@ -221,9 +222,9 @@ export function MilestonesPage() {
                 </aside>
                 <div className={`memory-grid ${items.length === 1 ? 'single-memory' : ''}`}>
                   {items.map((m, i) => (
-                    <Reveal key={m.id} delay={(i % 2) * 0.05}>
+                    <CollectionReveal key={m.id} index={i}>
                       <MilestoneCard item={m} onOpen={setSelected} />
-                    </Reveal>
+                    </CollectionReveal>
                   ))}
                 </div>
               </section>

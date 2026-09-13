@@ -28,7 +28,7 @@
   position: absolute;
   right: 3%;
   top: 70px;
-  color: #d6dccb;
+  color: #dccfcb;
   font-size: 130px;
   line-height: 1.3;
   font-family: Georgia, serif;
@@ -51,7 +51,7 @@
   position: absolute;
   left: 14px;
   z-index: 1;
-  color: #676b5c;
+  color: #6b5f5c;
 }
 .search-input > input {
   padding-left: 39px;
@@ -64,7 +64,7 @@
   width: 34px;
   display: grid;
   place-items: center;
-  color: #626c57;
+  color: #6c5b57;
 }
 .search-input > input {
   padding-right: 30px;
@@ -102,7 +102,7 @@
 }
 .intro-bottom > p {
   font-size: 13px;
-  color: #656b5c;
+  color: #6b5f5c;
 }
 .memory-stamp {
   border: 1px solid #bc785e77;
@@ -162,19 +162,19 @@
   display: flex;
   flex-direction: column;
   align-items: start;
-  border-right: 1px solid #d9decd;
+  border-right: 1px solid #ded1cd;
 }
 .year-marker > span {
   font-size: 35px;
   font-weight: 400;
   letter-spacing: -0.05em;
   font-family: Georgia, serif;
-  color: #526746;
+  color: #674d46;
 }
 .year-marker > small {
   font-size: 8px;
   letter-spacing: 0.14em;
-  color: #646c57;
+  color: #6c5b57;
   margin-top: 7px;
 }
 .year-marker > i {
@@ -210,7 +210,7 @@
   flex-direction: column;
   align-items: center;
   text-align: center;
-  color: #636c54;
+  color: #6c5954;
   padding: 65px 0 15px;
 }
 .album-bottom svg {
@@ -220,7 +220,7 @@
 .album-bottom p {
   font: 20px/1.5 var(--serif);
   margin-top: 20px;
-  color: #5e6e4f;
+  color: #6e564f;
 }
 .album-bottom small {
   font-size: 8px;
@@ -233,7 +233,7 @@
   justify-content: center;
   align-items: center;
   font-size: 12px;
-  color: #606d53;
+  color: #6d5853;
   padding-top: 20px;
 }
 .profile-heading {
@@ -261,7 +261,7 @@
 }
 .profile-person p {
   font-size: 12px;
-  color: #636c58;
+  color: #6c5c58;
   margin-top: 12px;
 }
 .profile-actions {
@@ -285,7 +285,7 @@
 .about-hero > div:not(.about-hero-copy) {
   position: absolute;
   inset: 0;
-  background: linear-gradient(90deg, #f3f4e3ee 0%, #eff2e7a0 35%, transparent 75%);
+  background: linear-gradient(90deg, #f0e9e7ee 0%, #f1eae8a0 35%, transparent 75%);
 }
 .about-hero-copy {
   position: relative;
@@ -295,7 +295,7 @@
 }
 .about-hero h1 {
   font-size: 62px;
-  color: #2a4532;
+  color: #45302a;
   font-weight: 600;
 }
 .about-hero .eyebrow {
@@ -308,7 +308,7 @@
 }
 .about-hero p {
   font-size: 13px;
-  color: #486247;
+  color: #624d47;
   margin-top: 25px;
 }
 .about-story {
@@ -324,7 +324,7 @@
 }
 .about-story p {
   font-size: 14px;
-  color: #666b5d;
+  color: #6b605d;
   margin-bottom: 20px;
   line-height: 2.15;
 }
@@ -343,7 +343,7 @@
 }
 .value-index {
   font-size: 10px;
-  color: #646c53;
+  color: #6c5853;
 }
 .values-grid svg {
   position: absolute;
@@ -351,7 +351,7 @@
   top: 30px;
   width: 30px;
   height: 30px;
-  color: #5e6f4c;
+  color: #6f534c;
 }
 .values-grid h3 {
   font-size: 21px;
@@ -360,7 +360,7 @@
 }
 .values-grid p {
   font-size: 13px;
-  color: #656c5a;
+  color: #6c5e5a;
 }
 .about-image-section {
   position: relative;
@@ -384,7 +384,7 @@
   margin: 20px 0 30px;
 }
 .about-image-section .eyebrow {
-  color: #56614f;
+  color: #61534f;
   font-size: 8px;
 }
 .department-list {
@@ -402,7 +402,7 @@
   font:
     28px/1.4 Georgia,
     serif;
-  color: #636c53;
+  color: #6c5853;
 }
 .department-title h2 {
   font-size: 30px;
@@ -412,7 +412,7 @@
 .department-title svg {
   width: 44px;
   height: 44px;
-  color: #5e6e4f;
+  color: #6e564f;
 }
 .department-detail h3 {
   font-size: 17px;
@@ -421,7 +421,7 @@
 }
 .department-detail p {
   font-size: 13px;
-  color: #656c58;
+  color: #6c5c58;
   max-width: 420px;
   margin-bottom: 16px;
 }
@@ -434,7 +434,7 @@
 }
 .department-outro p {
   font: 21px/1.5 var(--serif);
-  color: #616d53;
+  color: #6d5853;
 }
 .join-page .page-intro {
   padding-bottom: 48px;
@@ -470,7 +470,7 @@
 }
 .join-left > p {
   font-size: 13px;
-  color: #666b5a;
+  color: #6b5e5a;
   line-height: 2;
 }
 .join-promises {
@@ -484,17 +484,17 @@
   align-items: center;
   gap: 10px;
   font-size: 12px;
-  color: #5f6d54;
+  color: #6d5954;
 }
 .join-promises svg {
-  color: #5c6f46;
+  color: #6f4f46;
 }
 .application-panel {
   background: #fffefa;
-  border: 1px solid #e6e6dd;
+  border: 1px solid #e6dfdd;
   padding: 35px;
   border-radius: 8px;
-  box-shadow: 0 5px 30px #3f442606;
+  box-shadow: 0 5px 30px #422e2806;
 }
 .application-heading {
   position: relative;
@@ -509,7 +509,7 @@
 }
 .application-heading p {
   font-size: 12px;
-  color: #666b56;
+  color: #6b5a56;
   margin-top: 8px;
 }
 .application-heading > svg {
@@ -518,7 +518,7 @@
   top: 15px;
   width: 37px;
   height: 37px;
-  color: #646c53;
+  color: #6c5853;
 }
 .consent-label {
   display: flex;
@@ -526,7 +526,7 @@
   gap: 9px;
   font-size: 10px;
   line-height: 1.8;
-  color: #666b59;
+  color: #6b5d59;
 }
 .consent-label input {
   margin-top: 4px;
@@ -539,8 +539,8 @@
 .success-symbol {
   display: inline-flex;
   border-radius: 50%;
-  background: #e5ecdc;
-  color: #5d6f46;
+  background: #eae0de;
+  color: #6f4f46;
   padding: 20px;
   margin-bottom: 25px;
 }
@@ -549,7 +549,7 @@
   margin: 15px 0;
 }
 .application-success p {
-  color: #656c55;
+  color: #6c5a55;
   font-size: 13px;
 }
 .receipt {
@@ -557,14 +557,14 @@
   flex-direction: column;
   align-items: center;
   gap: 12px;
-  border: 1px dashed #ced5c0;
+  border: 1px dashed #d5c4c0;
   padding: 20px 8px 12px;
   margin: 28px 0;
   border-radius: 5px;
 }
 .receipt small {
   font-size: 10px;
-  color: #636c53;
+  color: #6c5853;
 }
 .receipt code {
   font-size: 11px;

@@ -1,34 +1,22 @@
-import { useRef, useState } from 'react';
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { motion, useScroll, useTransform, useReducedMotion } from 'motion/react';
-import {
-  ArrowUpRight,
-  ArrowDown,
-  Camera,
-  Palette,
-  Gamepad2,
-  PenTool,
-  Sparkles,
-  Plus,
-} from 'lucide-react';
+import { ArrowUpRight, Plus } from 'lucide-react';
+import { Opening } from '@/features/home/opening';
+import { ClubStory } from '@/features/home/club-story';
+import { WorldSelector } from '@/features/home/world-selector';
 import { Button } from '@/components/ui/button';
 import { Reveal } from '@/components/reveal';
-import { EventCard } from '@/features/events/event-card';
+import { EventShowcase } from '@/features/home/event-showcase';
+import { MemoryCarousel } from '@/features/home/memory-carousel';
 import { EventDialog } from '@/features/events/event-dialog';
-import { MilestoneCard } from '@/features/milestones/milestone-card';
 import { MilestoneDialog } from '@/features/milestones/milestone-dialog';
 import { MilestoneEditor } from '@/features/milestones/milestone-editor';
 import { api } from '@/lib/api';
 import { today } from '@/lib/utils';
-import { departments } from '@shared/content';
 import type { ClubEvent, Milestone, Page, Stats } from '@shared/types';
 import { ErrorState, Loading, EmptyState } from '@/components/states';
 export function HomePage() {
-  const target = useRef<HTMLElement>(null);
-  const reduced = useReducedMotion();
-  const { scrollYProgress } = useScroll({ target, offset: ['start start', 'end start'] });
-  const y = useTransform(scrollYProgress, [0, 1], ['0%', '15%']);
   const events = useQuery({ queryKey: ['events'], queryFn: () => api<ClubEvent[]>('/events') });
   const memories = useQuery({
     queryKey: ['milestones', 'home'],
@@ -38,7 +26,6 @@ export function HomePage() {
   const [event, setEvent] = useState<ClubEvent | null>(null);
   const [memory, setMemory] = useState<Milestone | null>(null);
   const [editing, setEditing] = useState<Milestone>();
-  const icons = [Palette, Camera, Gamepad2, PenTool, Sparkles];
   const selectedEvents = [...(events.data || [])]
     .sort((a, b) => {
       const aPast = a.date < today(),
@@ -52,104 +39,14 @@ export function HomePage() {
     .slice(0, 3);
   return (
     <>
-      <section className="home-hero" ref={target}>
-        <motion.img
-          className="hero-art"
-          src="/images/summer.webp"
-          alt="夏日海边，两位带着相机的伙伴站在山坡上，望向明亮的远方"
-          style={reduced ? undefined : { y }}
-          fetchPriority="high"
-        />
-        <div className="hero-wash" />
-        <div className="hero-content">
-          <motion.div
-            initial={reduced ? false : { opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-          >
-            <div className="hero-eyebrow">
-              <span />
-              把喜欢的事，变成我们的日常
-            </div>
-            <h1>
-              微光漫摄<span className="hero-star">✦</span>
-            </h1>
-            <p className="hero-headline">
-              把热爱，
-              <br />
-              留在这一帧。
-            </p>
-            <p className="hero-description">
-              在二次元与现实之间，
-              <br />
-              和同频的人，一起创作、相遇、发光。
-            </p>
-            <div className="hero-actions">
-              <Button asChild size="lg">
-                <Link to="/join">
-                  找到你的同好
-                  <ArrowUpRight />
-                </Link>
-              </Button>
-              <Link className="hero-secondary" to="/milestones">
-                翻开微光纪念册
-                <ArrowUpRight size={16} />
-              </Link>
-            </div>
-          </motion.div>
-        </div>
-        <div className="hero-bottom">
-          <span>青春没有标准答案，热爱就是我们的坐标。</span>
-          <a href="#discover" aria-label="向下探索">
-            <span>SCROLL TO EXPLORE</span>
-            <ArrowDown size={16} />
-          </a>
-        </div>
-        <div className="hero-side-note">A LITTLE LIGHT. AN INFINITE WORLD.</div>
-      </section>
-      <div className="interest-ribbon" aria-label="我们的热爱">
-        <span>ANIMATION</span>
-        <i>✦</i>
-        <span>COMICS</span>
-        <i>✦</i>
-        <span>GAMES</span>
-        <i>✦</i>
-        <span>PHOTOGRAPHY</span>
-        <i>✦</i>
-        <span>AND YOU</span>
-      </div>
-      <section className="section about-teaser" id="discover">
-        <Reveal className="about-aside">
-          <span className="eyebrow">01 / HELLO, WE ARE SIULIGHT</span>
-          <span className="outline-star">✳</span>
-        </Reveal>
-        <Reveal className="about-teaser-copy">
-          <h2>
-            一个人热爱，
-            <br />
-            一群人<span className="accent-hand">闪闪发光。</span>
-          </h2>
-          <div className="about-description">
-            <p>
-              一部反复重温的番剧，一张舍不得删的照片，
-              <br className="desktop-break" />
-              一个还没讲完的故事——
-              <br />
-              在微光，你的「小众」热爱，总有人懂。
-            </p>
-            <Link to="/about" className="text-arrow">
-              认识微光
-              <ArrowUpRight size={18} />
-            </Link>
-          </div>
-        </Reveal>
-      </section>
-      <section className="section events-section">
+      <Opening />
+      <ClubStory />
+      <section className="section events-section editorial-events">
         <Reveal className="section-heading">
           <div>
             <span className="eyebrow">02 / NEXT CHAPTER</span>
             <h2>
-              下一次相遇<span className="heading-dot">.</span>
+              下一次，<span className="serif-accent">一起入镜。</span>
             </h2>
             <p>从线上聊到线下，让热爱真的发生。</p>
           </div>
@@ -163,24 +60,18 @@ export function HomePage() {
         ) : events.error ? (
           <ErrorState error={events.error} retry={() => events.refetch()} />
         ) : selectedEvents.length ? (
-          <div className="event-grid">
-            {selectedEvents.map((e, i) => (
-              <Reveal key={e.id} delay={i * 0.08}>
-                <EventCard event={e} onOpen={setEvent} />
-              </Reveal>
-            ))}
-          </div>
+          <EventShowcase events={selectedEvents} onOpen={setEvent} />
         ) : (
           <EmptyState title="下一次相遇，正在酝酿" body="活动发布后，会第一时间出现在这里。" />
         )}
       </section>
-      <section className="home-memories">
+      <section className="home-memories scrapbook-section">
         <div className="section">
           <Reveal className="section-heading">
             <div>
               <span className="eyebrow">03 / OUR LITTLE INFINITIES</span>
               <h2>
-                每一束微光，都值得被记住<span className="heading-dot">.</span>
+                微光纪念册<span className="heading-dot">✦</span>
               </h2>
               <p>社团的大日子，你的小成就。一起收进这本纪念册。</p>
             </div>
@@ -194,13 +85,7 @@ export function HomePage() {
           ) : memories.error ? (
             <ErrorState error={memories.error} retry={() => memories.refetch()} />
           ) : memories.data?.items.length ? (
-            <div className="home-memory-grid">
-              {memories.data.items.slice(0, 3).map((m, i) => (
-                <Reveal key={m.id} delay={i * 0.07}>
-                  <MilestoneCard item={m} onOpen={setMemory} compact />
-                </Reveal>
-              ))}
-            </div>
+            <MemoryCarousel items={memories.data.items} onOpen={setMemory} />
           ) : (
             <EmptyState
               title="故事，等你写下第一笔"
@@ -224,37 +109,7 @@ export function HomePage() {
           </div>
         </div>
       </section>
-      <section className="section departments-teaser">
-        <Reveal className="section-heading">
-          <div>
-            <span className="eyebrow">04 / FIND YOUR PEOPLE</span>
-            <h2>
-              你的热爱，有处安放<span className="heading-dot">.</span>
-            </h2>
-          </div>
-          <Link to="/departments" className="text-arrow">
-            认识五个部门
-            <ArrowUpRight size={18} />
-          </Link>
-        </Reveal>
-        <div className="department-links">
-          {departments.map((d, i) => {
-            const Icon = icons[i];
-            return (
-              <Reveal key={d.id} delay={i * 0.04}>
-                <Link to={`/departments#${d.id}`}>
-                  <span className="department-icon">
-                    <Icon strokeWidth={1.4} />
-                  </span>
-                  <h3>{d.name}</h3>
-                  <p>{d.intro}</p>
-                  <ArrowUpRight className="department-arrow" size={17} />
-                </Link>
-              </Reveal>
-            );
-          })}
-        </div>
-      </section>
+      <WorldSelector />
       <section className="join-banner">
         <Reveal>
           <span className="eyebrow">YOUR STORY STARTS HERE</span>
@@ -269,9 +124,13 @@ export function HomePage() {
             </Link>
           </Button>
         </Reveal>
-        <span className="banner-star" aria-hidden="true">
-          ✦
-        </span>
+        <img
+          className="join-mascot"
+          src="/images/mascot-key-visual.webp"
+          alt=""
+          aria-hidden="true"
+          loading="lazy"
+        />
       </section>
       <EventDialog event={event} onClose={() => setEvent(null)} />
       <MilestoneDialog

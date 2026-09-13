@@ -15,9 +15,13 @@ export const navItems = [
 export function Brand() {
   return (
     <Link className="brand" to="/" aria-label="微光漫摄首页">
-      <span className="brand-symbol">
-        ✦<i>·</i>
-      </span>
+      <img
+        className="brand-logo"
+        src="/images/club-original.png"
+        alt=""
+        width="1920"
+        height="1920"
+      />
       <span>
         <b>微光漫摄</b>
         <small>SIULIGHT CLUB</small>

@@ -1,12 +1,12 @@
 :root {
-  --background: #f9f8f4;
-  --foreground: #272e29;
-  --primary: #be4434;
+  --background: #faf6f0;
+  --foreground: #342c2c;
+  --primary: #ad3c43;
   --primary-foreground: #fffdf8;
-  --secondary: #edece5;
-  --muted: #efeee8;
-  --muted-foreground: #62695b;
-  --border: #dedfd5;
+  --secondary: #f1e7e2;
+  --muted: #f4ece6;
+  --muted-foreground: #756360;
+  --border: #e5d8d0;
   --serif: 'Songti SC', 'Noto Serif CJK SC', 'STSong', serif;
   --radius: 0.75rem;
 }
@@ -54,7 +54,7 @@ button {
 }
 ::selection {
   background: #eab4a6;
-  color: #272e29;
+  color: #342c2c;
 }
 img {
   display: block;

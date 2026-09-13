@@ -7,6 +7,8 @@
 @import './styles/forms.css';
 @import './styles/admin.css';
 @import './styles/responsive.css';
+@import './styles/brand-experience.css';
+@import './styles/collections.css';
 
 @theme inline {
   --color-background: var(--background);

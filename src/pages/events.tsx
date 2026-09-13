@@ -10,6 +10,7 @@ import { Loading, ErrorState, EmptyState } from '@/components/states';
 import { EventCard } from '@/features/events/event-card';
 import { EventDialog } from '@/features/events/event-dialog';
 import { Reveal } from '@/components/reveal';
+import { CollectionReveal } from '@/components/collection-reveal';
 export function EventsPage() {
   const [tab, setTab] = useState('all');
   const [search, setSearch] = useState('');
@@ -28,18 +29,24 @@ export function EventsPage() {
       tab === 'upcoming' ? a.date.localeCompare(b.date) : b.date.localeCompare(a.date),
     );
   return (
-    <div className="page-shell">
-      <Reveal className="page-intro">
-        <span className="eyebrow">MEET OFFLINE, CONNECT FOR REAL</span>
-        <h1>
-          把「下次一定」，
-          <br />
-          变成<span className="serif-accent">这次见面。</span>
-        </h1>
-        <p>创作、放映、漫展、散步。和喜欢的人，做喜欢的事。</p>
-        <span className="intro-decoration" aria-hidden="true">
-          ↗
-        </span>
+    <div className="page-shell events-page">
+      <Reveal className="page-intro event-page-intro">
+        <div className="event-intro-copy">
+          <span className="eyebrow">MEET OFFLINE, CONNECT FOR REAL</span>
+          <h1>
+            活动日历<span className="serif-accent"> / </span>
+            <span className="event-intro-subtitle">热爱，约好了见。</span>
+          </h1>
+          <p>创作、放映、漫展、散步。和喜欢的人，做喜欢的事。</p>
+          <div className="event-intro-note">
+            <span>ANIMATION · COMICS · PHOTOGRAPHY</span>
+            <span>MEET YOU THERE ↗</span>
+          </div>
+        </div>
+        <div className="event-intro-art">
+          <img src="/images/club-days.webp" alt="社团伙伴一起画画、分享摄影作品的二次元创作场景" />
+          <span>OUR DAYS, IN FULL COLOR.</span>
+        </div>
       </Reveal>
       <div className="filter-bar">
         <FilterTabs value={tab} onValueChange={setTab}>
@@ -64,11 +71,11 @@ export function EventsPage() {
       ) : error ? (
         <ErrorState error={error} retry={refetch} />
       ) : items?.length ? (
-        <div className="event-grid events-page-grid">
+        <div className="event-grid events-page-grid" key={`${tab}:${search}`}>
           {items.map((e, i) => (
-            <Reveal key={e.id} delay={(i % 3) * 0.05}>
+            <CollectionReveal key={e.id} index={i}>
               <EventCard event={e} onOpen={setSelected} />
-            </Reveal>
+            </CollectionReveal>
           ))}
         </div>
       ) : (

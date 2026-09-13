@@ -1,11 +1,8 @@
-import { Heart, ArrowUpRight } from 'lucide-react';
+import { ArrowUpRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { useState } from 'react';
-import { toast } from 'sonner';
 import type { Milestone } from '@shared/types';
 import { AvatarGroup } from '@/components/avatar';
-import { send, queryClient } from '@/lib/api';
-import { useAuth } from '@/features/auth/auth-provider';
+import { MilestoneLike } from './milestone-like';
 import { formatDate } from '@/lib/utils';
 export function MilestoneCard({
   item,
@@ -16,23 +13,6 @@ export function MilestoneCard({
   onOpen: (m: Milestone) => void;
   compact?: boolean;
 }) {
-  const { user, openLogin } = useAuth();
-  const [busy, setBusy] = useState(false);
-  async function like() {
-    if (!user) {
-      openLogin();
-      return;
-    }
-    setBusy(true);
-    try {
-      await send(`/milestones/${item.id}/like`, { liked: !item.liked }, 'PUT');
-      await queryClient.invalidateQueries({ queryKey: ['milestones'] });
-    } catch (e) {
-      toast.error((e as Error).message);
-    } finally {
-      setBusy(false);
-    }
-  }
   return (
     <article
       className={`memory-card ${item.image ? 'has-image' : 'text-memory'} ${compact ? 'compact' : ''}`}
@@ -75,16 +55,7 @@ export function MilestoneCard({
             )}
           </span>
         </div>
-        <button
-          className={`like-button ${item.liked ? 'is-liked' : ''}`}
-          aria-label={item.liked ? '取消喜欢' : '喜欢这条纪念'}
-          aria-pressed={item.liked}
-          disabled={busy}
-          onClick={like}
-        >
-          <Heart size={16} fill={item.liked ? 'currentColor' : 'none'} />
-          <span>{item.likes}</span>
-        </button>
+        <MilestoneLike item={item} />
       </div>
     </article>
   );

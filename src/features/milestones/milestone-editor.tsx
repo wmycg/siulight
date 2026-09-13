@@ -2,7 +2,7 @@ import { useState, type FormEvent } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { ArrowUpRight, Check, Search } from 'lucide-react';
 import { toast } from 'sonner';
-import type { Member, Milestone } from '@shared/types';
+import type { Member, Milestone, ClubEvent } from '@shared/types';
 import { categories } from '@shared/content';
 import { milestoneSchema } from '@shared/validation';
 import {
@@ -32,6 +32,7 @@ export function MilestoneEditor({
 }) {
   const { user } = useAuth();
   const [image, setImage] = useState(item?.image || '');
+  const [eventId, setEventId] = useState(item?.eventId || '');
   const [participants, setParticipants] = useState<string[]>(
     item?.participants.filter((p) => p.id !== user?.id).map((p) => p.id) || [],
   );
@@ -42,6 +43,11 @@ export function MilestoneEditor({
   const { data: people } = useQuery({
     queryKey: ['members', search],
     queryFn: () => api<Member[]>(`/members?q=${encodeURIComponent(search)}`),
+    enabled: open,
+  });
+  const { data: events, isError: eventsFailed } = useQuery({
+    queryKey: ['events'],
+    queryFn: () => api<ClubEvent[]>('/events'),
     enabled: open,
   });
   async function submit(e: FormEvent<HTMLFormElement>) {
@@ -111,6 +117,24 @@ export function MilestoneEditor({
               </Select>
             </Field>
           </div>
+          <Field label="关联一场活动（可选）">
+            <Select name="eventId" value={eventId} onChange={(e) => setEventId(e.target.value)}>
+              <option value="">独立的个人时刻</option>
+              {item?.eventId && !events?.some((event) => event.id === item.eventId) && (
+                <option value={item.eventId}>保留原关联活动</option>
+              )}
+              {events?.map((event) => (
+                <option key={event.id} value={event.id}>
+                  {event.date} · {event.title}
+                </option>
+              ))}
+            </Select>
+            <p className="micro-copy">
+              {eventsFailed
+                ? '活动暂时没加载出来，可以先记录独立时刻。'
+                : '选中后，你的记录会和这场活动的其他回忆放在一起。'}
+            </p>
+          </Field>
           <Field label="写下想记住的事">
             <Textarea
               name="body"

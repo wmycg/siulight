@@ -13,6 +13,7 @@
 @import './styles/cinema-mobile.css';
 @import './styles/cinema-mascot.css';
 @import './styles/wall.css';
+@import './styles/memory-timeline.css';
 
 @theme inline {
   --color-background: var(--background);

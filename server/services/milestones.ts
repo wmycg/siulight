@@ -9,10 +9,12 @@ export interface MilestoneQuery {
   q?: string;
   year?: string;
   page?: string;
+  month?: string;
+  date?: string;
+  eventId?: string;
+  unlinked?: boolean;
 }
-export async function listMilestones(query: MilestoneQuery, viewer = ''): Promise<Page<Milestone>> {
-  const page = Math.max(1, Math.min(10000, Number(query.page) || 1));
-  const limit = 12;
+export function milestoneFilter(query: MilestoneQuery) {
   const where: string[] = [];
   const args: SqlValue[] = [];
   if (query.kind === 'club' || query.kind === 'personal') {
@@ -26,14 +28,37 @@ export async function listMilestones(query: MilestoneQuery, viewer = ''): Promis
     args.push(query.author, query.author);
   }
   if (query.year && /^\d{4}$/.test(query.year)) {
-    where.push('YEAR(m.date)=?');
-    args.push(query.year);
+    where.push('m.date >= ? AND m.date < ?');
+    args.push(`${query.year}-01-01`, `${Number(query.year) + 1}-01-01`);
   }
+  if (query.month) {
+    where.push('m.date >= ? AND m.date < DATE_ADD(?, INTERVAL 1 MONTH)');
+    args.push(`${query.month}-01`, `${query.month}-01`);
+  }
+  if (query.date) {
+    where.push('m.date=?');
+    args.push(query.date);
+  }
+  if (query.eventId) {
+    where.push('m.eventId=?');
+    args.push(query.eventId);
+  }
+  if (query.unlinked) where.push('m.eventId IS NULL');
   if (query.q) {
-    where.push('(m.title LIKE ? OR m.body LIKE ?)');
-    args.push(`%${query.q.slice(0, 100)}%`, `%${query.q.slice(0, 100)}%`);
+    where.push(
+      '(m.title LIKE ? OR m.body LIKE ? OR EXISTS (SELECT 1 FROM users su WHERE su.id=m.authorId AND su.name LIKE ?))',
+    );
+    args.push(...Array(3).fill(`%${query.q.slice(0, 100)}%`));
   }
-  const clause = where.length ? `WHERE ${where.join(' AND ')}` : '';
+  return { clause: where.length ? `WHERE ${where.join(' AND ')}` : '', args };
+}
+export async function listMilestones(
+  query: MilestoneQuery,
+  viewer = '',
+  limit = 12,
+): Promise<Page<Milestone>> {
+  const page = Math.max(1, Math.min(10000, Number(query.page) || 1));
+  const { clause, args } = milestoneFilter(query);
   const [count] = await rows<{ total: number }>(
     `SELECT COUNT(*) total FROM milestones m ${clause}`,
     args,
@@ -73,6 +98,14 @@ export async function saveMilestone(
   const connection = await pool.getConnection();
   try {
     await connection.beginTransaction();
+    if (data.eventId) {
+      const [events] = await connection.execute<RowDataPacket[]>(
+        'SELECT id FROM events WHERE id=? FOR SHARE',
+        [data.eventId],
+      );
+      if (!events.length)
+        throw Object.assign(new Error('关联的活动已不存在，请重新选择'), { status: 400 });
+    }
     const participants = [...new Set([authorId, ...data.participantIds])];
     const [people] = await connection.execute<RowDataPacket[]>(
       `SELECT id FROM users WHERE id IN (${participants.map(() => '?').join(',')})`,
@@ -82,14 +115,33 @@ export async function saveMilestone(
       throw Object.assign(new Error('部分参与者已不存在，请重新选择'), { status: 400 });
     if (update) {
       await connection.execute(
-        'UPDATE milestones SET title=?,body=?,date=?,kind=?,category=?,image=? WHERE id=?',
-        [data.title, data.body, data.date, data.kind, data.category, data.image, id],
+        'UPDATE milestones SET title=?,body=?,date=?,kind=?,category=?,image=?,eventId=? WHERE id=?',
+        [
+          data.title,
+          data.body,
+          data.date,
+          data.kind,
+          data.category,
+          data.image,
+          data.eventId || null,
+          id,
+        ],
       );
       await connection.execute('DELETE FROM milestone_participants WHERE milestoneId=?', [id]);
     } else
       await connection.execute(
-        'INSERT INTO milestones (id,authorId,title,body,date,kind,category,image) VALUES (?,?,?,?,?,?,?,?)',
-        [id, authorId, data.title, data.body, data.date, data.kind, data.category, data.image],
+        'INSERT INTO milestones (id,authorId,title,body,date,kind,category,image,eventId) VALUES (?,?,?,?,?,?,?,?,?)',
+        [
+          id,
+          authorId,
+          data.title,
+          data.body,
+          data.date,
+          data.kind,
+          data.category,
+          data.image,
+          data.eventId || null,
+        ],
       );
     for (const person of participants)
       await connection.execute(

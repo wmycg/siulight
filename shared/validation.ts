@@ -31,6 +31,7 @@ export const registerSchema = z.object({
 });
 export const loginSchema = registerSchema.pick({ email: true, password: true });
 export const milestoneSchema = z.object({
+  eventId: z.union([z.string().uuid(), z.literal('')]).optional(),
   title: text(2, 80),
   body: text(5, 3000),
   date: dateSchema.refine(

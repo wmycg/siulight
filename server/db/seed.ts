@@ -5,6 +5,7 @@ import { saveMilestone } from '../services/milestones';
 import type { Member } from '../../shared/types';
 import { config } from '../config';
 import { seedWall } from './seed-wall';
+import { seedTimeline } from './seed-timeline';
 if (config.production) throw new Error('演示种子禁止在 production 环境执行。');
 const adminPassword = process.env.SEED_ADMIN_PASSWORD;
 const memberPassword = process.env.SEED_MEMBER_PASSWORD;
@@ -209,8 +210,9 @@ try {
       );
   }
   await seedWall();
+  await seedTimeline(members);
   console.log(
-    'Demo seed complete: 6 accounts, 4 events, 6 memories. Existing data/passwords left unchanged.',
+    'Demo seed complete: accounts, events, memories, shared story and message wall. Existing data/passwords left unchanged.',
   );
   console.log('演示内容不代表真实社团历史；上线前请替换。账号说明见 README.md。');
 } finally {

@@ -1,34 +1,48 @@
 import { Router } from 'express';
 import { randomUUID } from 'node:crypto';
 import { z } from 'zod';
-import { milestoneSchema } from '../../shared/validation';
+import { milestoneSchema, dateSchema } from '../../shared/validation';
 import { authenticated } from '../middleware/auth';
 import { rows, run } from '../db/client';
 import { listMilestones, saveMilestone } from '../services/milestones';
+import { memoryChapters, memoryTimeline } from '../services/memory-timeline';
 import { audit } from '../services/audit';
 export const milestoneRouter = Router();
+const filters = z.object({
+  kind: z.enum(['personal', 'club']).optional(),
+  author: z.string().uuid().optional(),
+  q: z.string().max(100).optional(),
+  year: z
+    .string()
+    .regex(/^(\d{4})?$/)
+    .optional(),
+  month: z
+    .string()
+    .regex(/^\d{4}-(0[1-9]|1[0-2])$/)
+    .optional(),
+  date: dateSchema.optional(),
+  eventId: z.string().uuid().optional(),
+  unlinked: z
+    .literal('true')
+    .optional()
+    .transform((v) => v === 'true'),
+  page: z
+    .string()
+    .regex(/^[1-9]\d{0,3}$/)
+    .optional(),
+});
 milestoneRouter.get('/', async (req, res) =>
-  res.json(
-    await listMilestones(
-      z
-        .object({
-          kind: z.enum(['personal', 'club']).optional(),
-          author: z.string().uuid().optional(),
-          q: z.string().max(100).optional(),
-          year: z
-            .string()
-            .regex(/^(\d{4})?$/)
-            .optional(),
-          page: z
-            .string()
-            .regex(/^[1-9]\d{0,3}$/)
-            .optional(),
-        })
-        .parse(req.query),
-      req.user?.id,
-    ),
-  ),
+  res.json(await listMilestones(filters.parse(req.query), req.user?.id)),
 );
+milestoneRouter.get('/chapters', async (req, res) =>
+  res.json(await memoryChapters(filters.parse(req.query))),
+);
+milestoneRouter.get('/timeline', async (req, res) => {
+  const query = filters
+    .extend({ month: z.string().regex(/^\d{4}-(0[1-9]|1[0-2])$/) })
+    .parse(req.query);
+  res.json(await memoryTimeline(query, req.user?.id));
+});
 milestoneRouter.get('/years', async (_req, res) =>
   res.json(await rows('SELECT DISTINCT YEAR(date) year FROM milestones ORDER BY year DESC')),
 );

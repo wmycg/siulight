@@ -53,6 +53,7 @@ model Event {
   capacity        Int             @default(30)
   createdAt       DateTime        @default(now()) @db.Timestamp(0)
   event_attendees EventAttendee[]
+  milestones      Milestone[]
 
   @@index([date], map: "event_date")
   @@map("events")
@@ -81,6 +82,8 @@ model MilestoneParticipant {
 }
 
 model Milestone {
+  eventId                String?                @db.Char(36)
+  event                  Event?                 @relation(fields: [eventId], references: [id], onDelete: SetNull, onUpdate: NoAction)
   id                     String                 @id @db.Char(36)
   authorId               String                 @db.Char(36)
   title                  String                 @db.VarChar(80)
@@ -94,6 +97,7 @@ model Milestone {
   milestone_participants MilestoneParticipant[]
   users                  User                   @relation(fields: [authorId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "milestones_ibfk_1")
 
+  @@index([eventId, date], map: "milestone_event_date")
   @@index([authorId, date], map: "milestone_author")
   @@index([date, createdAt], map: "milestone_date")
   @@map("milestones")

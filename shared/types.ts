@@ -10,6 +10,7 @@ export interface User extends Member {
   role: Role;
 }
 export interface Milestone {
+  eventId?: string | null;
   id: string;
   title: string;
   body: string;
@@ -81,4 +82,22 @@ export interface WallPageData {
   items: WallNote[];
   total: number;
   nextCursor: number | null;
+}
+
+export interface MemoryChapter {
+  month: string;
+  count: number;
+  people: number;
+  cover: string;
+}
+export interface MemoryGroup {
+  key: string;
+  type: 'event' | 'day';
+  eventId: string | null;
+  date: string;
+  title: string;
+  cover: string;
+  count: number;
+  people: number;
+  preview: Milestone[];
 }

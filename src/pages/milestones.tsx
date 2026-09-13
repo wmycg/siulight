@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link, useParams, useSearchParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { Plus, Search, ArrowLeft, ArrowRight, BookOpen } from 'lucide-react';
-import type { Member, Milestone, Page } from '@shared/types';
+import type { Member, Milestone, MemoryChapter } from '@shared/types';
 import { api } from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -10,9 +10,8 @@ import { FilterTabs, FilterTabsList, FilterTabsTrigger } from '@/components/filt
 import { Select } from '@/components/field';
 import { Avatar } from '@/components/avatar';
 import { Reveal } from '@/components/reveal';
-import { CollectionReveal } from '@/components/collection-reveal';
+import { MemoryTimeline } from '@/features/milestones/memory-timeline';
 import { Loading, ErrorState, EmptyState } from '@/components/states';
-import { MilestoneCard } from '@/features/milestones/milestone-card';
 import { MilestoneDialog } from '@/features/milestones/milestone-dialog';
 import { MilestoneEditor } from '@/features/milestones/milestone-editor';
 import { useAuth } from '@/features/auth/auth-provider';
@@ -26,7 +25,6 @@ export function MilestonesPage() {
   const [editor, setEditor] = useState<{ item?: Milestone } | null>(null);
   const [password, setPassword] = useState(false);
   const tab = params.get('kind') || 'all',
-    page = Math.max(1, Number(params.get('page')) || 1),
     year = params.get('year') || '';
   const author = id || (tab === 'mine' ? user?.id : undefined);
   const query = new URLSearchParams({
@@ -34,11 +32,10 @@ export function MilestonesPage() {
     ...(author ? { author } : {}),
     q: params.get('q') || '',
     year,
-    page: String(page),
   });
   const memories = useQuery({
-    queryKey: ['milestones', query.toString()],
-    queryFn: () => api<Page<Milestone>>(`/milestones?${query}`),
+    queryKey: ['milestones', 'chapters', query.toString()],
+    queryFn: () => api<MemoryChapter[]>(`/milestones/chapters?${query}`),
     enabled: tab !== 'mine' || !!user,
   });
   const years = useQuery({
@@ -66,11 +63,6 @@ export function MilestonesPage() {
     }
     setEditor({});
   }
-  const groups = memories.data?.items.reduce<Record<string, Milestone[]>>((all, item) => {
-    const y = item.date.slice(0, 4);
-    (all[y] ||= []).push(item);
-    return all;
-  }, {});
   return (
     <div className={`page-shell milestones-page ${id ? 'personal-page' : ''}`}>
       {id ? (
@@ -180,7 +172,7 @@ export function MilestonesPage() {
                 setDraft(e.target.value);
                 if (!e.target.value) change('q', '');
               }}
-              placeholder="搜索一个瞬间…"
+              placeholder="搜索瞬间或作者…"
             />
             <button type="submit" aria-label="开始搜索">
               <ArrowRight size={16} />
@@ -209,27 +201,13 @@ export function MilestonesPage() {
         <Loading />
       ) : memories.error ? (
         <ErrorState error={memories.error} retry={() => memories.refetch()} />
-      ) : memories.data?.items.length ? (
-        <div className="timeline" key={query.toString()}>
-          {Object.entries(groups || {})
-            .sort(([a], [b]) => b.localeCompare(a))
-            .map(([y, items]) => (
-              <section key={y} className="timeline-year">
-                <aside className="year-marker">
-                  <span>{y}</span>
-                  <small>CHAPTER {y.slice(2)}</small>
-                  <i />
-                </aside>
-                <div className={`memory-grid ${items.length === 1 ? 'single-memory' : ''}`}>
-                  {items.map((m, i) => (
-                    <CollectionReveal key={m.id} index={i}>
-                      <MilestoneCard item={m} onOpen={setSelected} />
-                    </CollectionReveal>
-                  ))}
-                </div>
-              </section>
-            ))}
-        </div>
+      ) : memories.data?.length ? (
+        <MemoryTimeline
+          key={query.toString()}
+          chapters={memories.data}
+          filters={query.toString()}
+          onOpen={setSelected}
+        />
       ) : (
         <EmptyState
           title={
@@ -252,29 +230,6 @@ export function MilestonesPage() {
           }
         />
       )}{' '}
-      {!!memories.data?.pages && memories.data.pages > 1 && (
-        <div className="pagination">
-          <Button
-            variant="outline"
-            disabled={page <= 1}
-            onClick={() => change('page', String(page - 1))}
-          >
-            <ArrowLeft />
-            上一页
-          </Button>
-          <span>
-            {page} / {memories.data.pages}
-          </span>
-          <Button
-            variant="outline"
-            disabled={page >= memories.data.pages}
-            onClick={() => change('page', String(page + 1))}
-          >
-            下一页
-            <ArrowRight />
-          </Button>
-        </div>
-      )}
       <div className="album-bottom">
         <BookOpen strokeWidth={1} />
         <p>故事还长，我们慢慢写。</p>

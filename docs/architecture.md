@@ -33,7 +33,7 @@ tests/               领域测试与真实 MySQL API 集成测试
 - `events` / `event_attendees`：公开活动及报名关系。报名时锁定活动行，容量校验与写入在同一事务内。
 - `applications`：入社表单与状态（待联系、已联系、已入社）；学号唯一，个人信息仅管理员可见。
 - `audit_logs`：管理行为日志；不记录密码和申请表完整内容。
-- `schema_migrations`：已应用的结构版本。后续结构修改应新增版本，而不是修改已执行的版本。
+- `_prisma_migrations`：Prisma Migrate 的迁移历史与执行状态。模型位于 `prisma/schema.prisma`，后续改表新增迁移，部署自动应用。原 `schema_migrations` 和手写版本 1 迁移器已移除。
 
 ## 里程碑的展示规则
 
@@ -65,3 +65,5 @@ tests/               领域测试与真实 MySQL API 集成测试
 ## 正式环境准备
 
 演示账号和演示活动/纪念只用于本地测试。生产部署前应移除演示记录、设置真实内容和管理员密码；演示种子在 NODE_ENV=production 时主动拒绝执行。邮箱目前作为登录标识，未接入邮件验证或自助找回密码。上传文件应持久化并备份；多实例部署需改为共享对象存储。服务反向代理时需结合实际代理配置限流 IP，不盲目信任外部代理头。生产仅支持经过 HTTPS 反向代理的访问，APP_ORIGIN 必须填写实际域名。
+
+留言墙的公开数据与身份权限由 `server/routes/wall.ts` 管理，表结构在 Prisma 的 `WallNote` 模型及增量迁移中维护。客户端按游标取数据，`src/features/wall` 分离纸条展示、拖拽视口、发布/阅读弹窗与娃娃机状态机。`/departments` 保留为兼容入口，重定向到 `/about` 对应锚点。

@@ -8,9 +8,9 @@ import { toast } from 'sonner';
 export const navItems = [
   { to: '/', label: '首页' },
   { to: '/about', label: '关于微光' },
-  { to: '/departments', label: '我们的部门' },
   { to: '/events', label: '活动日历' },
   { to: '/milestones', label: '微光纪念册' },
+  { to: '/wall', label: '留言墙' },
 ];
 export function Brand() {
   return (
@@ -138,7 +138,7 @@ export function Layout() {
       <main id="main" tabIndex={-1}>
         <Outlet />
       </main>
-      <footer className="site-footer">
+      <footer className="site-footer" hidden={location.pathname === '/wall'}>
         <div className="footer-top">
           <Brand />
           <p>

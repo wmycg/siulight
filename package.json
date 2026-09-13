@@ -4,24 +4,33 @@
   "private": true,
   "type": "module",
   "engines": {
-    "node": ">=22"
+    "node": "^22.12.0 || >=24.0.0"
   },
   "scripts": {
     "dev": "tsx watch server/index.ts",
-    "build": "tsc --noEmit && vite build && esbuild server/index.ts --bundle --platform=node --format=esm --packages=external --outfile=dist/server.js",
-    "start": "NODE_ENV=production node dist/server.js",
+    "build": "pnpm db:generate && tsc --noEmit && vite build && esbuild server/index.ts --bundle --platform=node --format=esm --packages=external --outfile=dist/server.js",
+    "start": "pnpm db:migrate && NODE_ENV=production node dist/server.js",
     "typecheck": "tsc --noEmit",
     "db:up": "docker compose up -d --wait",
     "db:down": "docker compose down",
-    "db:migrate": "tsx server/db/migrate.ts",
+    "db:migrate": "prisma migrate deploy",
     "db:seed": "tsx server/db/seed.ts",
-    "setup": "pnpm db:up && pnpm db:migrate && pnpm db:seed",
+    "setup": "pnpm db:up && pnpm db:shadow && pnpm db:migrate && pnpm db:generate && pnpm db:seed",
     "test": "tsx --test tests/*.test.ts",
     "test:integration": "tsx --test tests/*.integration.ts",
     "format": "prettier --write src server shared tests docs *.json *.ts *.yaml *.md",
-    "format:check": "prettier --check src server shared tests docs *.json *.ts *.yaml *.md"
+    "format:check": "prettier --check src server shared tests docs *.json *.ts *.yaml *.md",
+    "deploy": "pnpm build && pnpm start",
+    "db:generate": "prisma generate",
+    "db:dev": "prisma migrate dev",
+    "db:status": "prisma migrate status",
+    "db:reset": "prisma migrate reset",
+    "db:studio": "prisma studio",
+    "db:shadow": "docker compose exec -T mysql sh /docker-entrypoint-initdb.d/01-shadow.sh",
+    "test:migrations": "tsx --test tests/migrations.database.ts"
   },
   "dependencies": {
+    "@prisma/client": "^7.10.0",
     "@radix-ui/react-dialog": "^1.1.15",
     "@radix-ui/react-slot": "^1.2.3",
     "@radix-ui/react-tabs": "^1.1.13",
@@ -38,6 +47,7 @@
     "motion": "^12.35.0",
     "multer": "^2.3.0",
     "mysql2": "^3.19.0",
+    "prisma": "7.10.0",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
     "react-router-dom": "^7.13.1",

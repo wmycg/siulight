@@ -1,8 +1,19 @@
-import { Link } from 'react-router-dom';
+import { useEffect } from 'react';
+import { DepartmentSection } from '@/features/about/department-section';
+import { Link, useLocation } from 'react-router-dom';
 import { ArrowUpRight, Camera, Heart, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Reveal } from '@/components/reveal';
 export function AboutPage() {
+  const { hash } = useLocation();
+  useEffect(() => {
+    if (!hash) return;
+    const id = decodeURIComponent(hash.slice(1));
+    const frame = requestAnimationFrame(() =>
+      document.getElementById(id)?.scrollIntoView({ behavior: 'instant' }),
+    );
+    return () => cancelAnimationFrame(frame);
+  }, [hash]);
   return (
     <>
       <section className="about-hero">
@@ -41,7 +52,7 @@ export function AboutPage() {
           <p>
             在微光漫摄，我们聊动画、画漫画、做游戏，也拍照、剪片、策划活动。你不必样样精通，更不用先证明自己。带着好奇心来，一起把想象变成作品，把陌生人变成伙伴。
           </p>
-          <Link to="/departments" className="text-arrow">
+          <Link to="/about#departments" className="text-arrow">
             找到属于你的部门
             <ArrowUpRight size={18} />
           </Link>
@@ -83,6 +94,7 @@ export function AboutPage() {
           ))}
         </div>
       </section>
+      <DepartmentSection />
       <section className="about-image-section">
         <img
           src="/images/studio.webp"

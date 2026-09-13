@@ -19,6 +19,7 @@ const AboutPage = lazy(() => import('@/pages/about').then((m) => ({ default: m.A
 const DepartmentsPage = lazy(() =>
   import('@/pages/departments').then((m) => ({ default: m.DepartmentsPage })),
 );
+const WallPage = lazy(() => import('@/pages/wall').then((m) => ({ default: m.WallPage })));
 const JoinPage = lazy(() => import('@/pages/join').then((m) => ({ default: m.JoinPage })));
 const AdminPage = lazy(() => import('@/pages/admin').then((m) => ({ default: m.AdminPage })));
 window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
@@ -34,6 +35,7 @@ createRoot(document.getElementById('root')!).render(
                   <Route index element={<HomePage />} />
                   <Route path="about" element={<AboutPage />} />
                   <Route path="departments" element={<DepartmentsPage />} />
+                  <Route path="wall" element={<WallPage />} />
                   <Route path="events" element={<EventsPage />} />
                   <Route path="milestones" element={<MilestonesPage />} />
                   <Route path="members/:id" element={<MilestonesPage />} />
@@ -58,7 +60,13 @@ createRoot(document.getElementById('root')!).render(
                 </Route>
               </Routes>
             </Suspense>
-            <Toaster position="bottom-center" richColors closeButton />
+            <Toaster
+              position="top-center"
+              offset={{ top: 105 }}
+              mobileOffset={{ top: 85, left: 16, right: 16 }}
+              closeButton
+              toastOptions={{ className: 'club-toast', duration: 2800 }}
+            />
           </AuthProvider>
         </BrowserRouter>
       </MotionConfig>

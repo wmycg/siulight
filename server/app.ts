@@ -1,4 +1,5 @@
 import express from 'express';
+import { wallRouter } from './routes/wall';
 import cookieParser from 'cookie-parser';
 import helmet from 'helmet';
 import { ZodError } from 'zod';
@@ -46,6 +47,7 @@ app.use(
 app.use('/api/auth', authRouter);
 app.use('/api/milestones', milestoneRouter);
 app.use('/api/events', eventRouter);
+app.use('/api/wall', wallRouter);
 app.use('/api/admin', adminRouter);
 app.use('/api/uploads', uploadRouter);
 app.use('/api', publicRouter);

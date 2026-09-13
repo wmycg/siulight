@@ -10,6 +10,7 @@ const ease = [0.22, 1, 0.36, 1] as const;
 export function Opening({ immersive = false }: { immersive?: boolean }) {
   const target = useRef<HTMLElement>(null);
   const reduced = useReducedMotion();
+  // Local entrance motion is independent of the cinematic scroll position reset.
   const { scrollYProgress } = useScroll({ target, offset: ['start start', 'end start'] });
   const artY = useTransform(scrollYProgress, [0, 1], [0, 110]);
   const typeX = useTransform(scrollYProgress, [0, 1], ['0%', '-12%']);
@@ -44,7 +45,7 @@ export function Opening({ immersive = false }: { immersive?: boolean }) {
         <div className="opening-copy">
           <motion.p
             className="opening-kicker"
-            initial={reduced || immersive ? false : { opacity: 0 }}
+            initial={reduced ? false : { opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.7 }}
           >
@@ -54,7 +55,7 @@ export function Opening({ immersive = false }: { immersive?: boolean }) {
             {['微', '光', '漫', '摄'].map((letter, i) => (
               <span className="opening-letter-mask" key={letter} aria-hidden="true">
                 <motion.span
-                  initial={reduced || immersive ? false : { y: '110%', rotate: 8 }}
+                  initial={reduced ? false : { y: '110%', rotate: 8 }}
                   animate={{ y: 0, rotate: 0 }}
                   transition={{ delay: 0.1 + i * 0.065, duration: 0.85, ease }}
                 >
@@ -67,7 +68,7 @@ export function Opening({ immersive = false }: { immersive?: boolean }) {
             </span>
           </h1>
           <motion.div
-            initial={reduced || immersive ? false : { opacity: 0, y: 18 }}
+            initial={reduced ? false : { opacity: 0, y: 18 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4, duration: 0.7, ease }}
           >
@@ -113,14 +114,14 @@ export function Opening({ immersive = false }: { immersive?: boolean }) {
               width="1024"
               height="1536"
               fetchPriority="high"
-              initial={reduced || immersive ? false : { opacity: 0, y: 55, rotate: -4 }}
+              initial={reduced ? false : { opacity: 0, y: 55, rotate: -4 }}
               animate={{ opacity: 1, y: 0, rotate: 0 }}
               transition={{ delay: 0.12, duration: 1.1, ease }}
             />
           </motion.div>
           <motion.span
             className="opening-greeting"
-            initial={reduced || immersive ? false : { scale: 0.7, opacity: 0, rotate: -12 }}
+            initial={reduced ? false : { scale: 0.7, opacity: 0, rotate: -12 }}
             animate={{ scale: 1, opacity: 1, rotate: -8 }}
             transition={{ delay: 0.8, duration: 0.5, ease }}
           >

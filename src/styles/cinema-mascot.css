@@ -1,0 +1,73 @@
+/* Supporting character motifs, independent of the original scene layout. */
+.scene-mascot {
+  position: absolute;
+  display: block;
+  pointer-events: none;
+  user-select: none;
+}
+.scene-mascot img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 20%;
+}
+.mascot-event-ghost,
+.mascot-memory-ghost {
+  opacity: 0.09;
+  filter: grayscale(1) sepia(0.3);
+  mix-blend-mode: multiply;
+  mask-image: linear-gradient(#000 65%, transparent);
+  z-index: -1;
+}
+.mascot-event-ghost {
+  width: 190px;
+  height: 260px;
+  left: -28px;
+  top: -100px;
+  rotate: -5deg;
+}
+.mascot-memory-ghost {
+  width: 148px;
+  height: 180px;
+  left: calc(8% + 270px);
+  top: 4px;
+}
+.cinema-world-question {
+  position: relative;
+  display: inline-block;
+  white-space: nowrap;
+}
+.mascot-sentence-companion {
+  width: 52px;
+  height: 70px;
+  left: 100%;
+  margin-left: 8px;
+  bottom: 0;
+  mix-blend-mode: darken;
+  mask-image: linear-gradient(#000 80%, transparent);
+  rotate: 5deg;
+}
+@media (max-width: 760px) {
+  .mascot-event-ghost {
+    width: 116px;
+    height: 154px;
+    left: -8px;
+    top: -22px;
+    opacity: 0.075;
+  }
+  .mascot-memory-ghost {
+    width: 108px;
+    height: 144px;
+    left: auto;
+    right: 22px;
+    top: 8px;
+    opacity: 0.075;
+  }
+  .mascot-sentence-companion {
+    width: 32px;
+    height: 44px;
+    margin-left: 4px;
+    bottom: 2px;
+  }
+}

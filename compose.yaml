@@ -13,6 +13,7 @@ services:
     command: ['--character-set-server=utf8mb4', '--collation-server=utf8mb4_unicode_ci']
     volumes:
       - mysql-data:/var/lib/mysql
+      - ./docker/mysql/01-shadow.sh:/docker-entrypoint-initdb.d/01-shadow.sh:ro
     healthcheck:
       test: ['CMD-SHELL', 'mysqladmin ping -h localhost -u root -p$$MYSQL_ROOT_PASSWORD --silent']
       interval: 3s

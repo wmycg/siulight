@@ -4,6 +4,7 @@ import { hashPassword } from '../services/password';
 import { saveMilestone } from '../services/milestones';
 import type { Member } from '../../shared/types';
 import { config } from '../config';
+import { seedWall } from './seed-wall';
 if (config.production) throw new Error('演示种子禁止在 production 环境执行。');
 const adminPassword = process.env.SEED_ADMIN_PASSWORD;
 const memberPassword = process.env.SEED_MEMBER_PASSWORD;
@@ -207,6 +208,7 @@ try {
         false,
       );
   }
+  await seedWall();
   console.log(
     'Demo seed complete: 6 accounts, 4 events, 6 memories. Existing data/passwords left unchanged.',
   );

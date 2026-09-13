@@ -64,3 +64,21 @@ export interface Stats {
   milestones: number;
   events: number;
 }
+
+export const noteColors = ['random', 'butter', 'rose', 'sage', 'sky', 'lavender'] as const;
+export type NoteColor = (typeof noteColors)[number];
+export interface WallNote {
+  id: number;
+  body: string;
+  nickname: string;
+  color: NoteColor;
+  isDemo: boolean;
+  registered: boolean;
+  createdAt: string;
+  canDelete: boolean;
+}
+export interface WallPageData {
+  items: WallNote[];
+  total: number;
+  nextCursor: number | null;
+}

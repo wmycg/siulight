@@ -6,6 +6,7 @@ import type { Milestone } from '@shared/types';
 import { formatDate } from '@/lib/utils';
 import type { SceneProps } from './frame';
 import { useMediaQuery } from '@/hooks/use-media-query';
+import { SceneMascot } from './scene-mascot';
 
 function MemoryColumn({
   items,
@@ -82,6 +83,7 @@ export function MemoryWall({
   return (
     <div className={`cinema-memories ${visible.length <= 2 ? 'is-small' : ''}`}>
       <div className="cinema-memory-heading">
+        <SceneMascot pose="keeper" {...scene} className="mascot-memory-ghost" />
         <span className="eyebrow">OUR LITTLE INFINITIES</span>
         <h2>
           微光纪念册<span className="serif-accent"> ✦</span>

@@ -52,7 +52,7 @@ export function WorldSelector() {
           </h2>
           <p>五个部门，无数种一起发光的方式。</p>
         </div>
-        <Link to="/departments" className="text-arrow">
+        <Link to="/about#departments" className="text-arrow">
           认识所有部门 <ArrowUpRight size={18} />
         </Link>
       </Reveal>
@@ -91,7 +91,7 @@ export function WorldSelector() {
                   <span>{department.en}</span>
                   <h3>{scenes[i].title}</h3>
                   <p>{scenes[i].caption}</p>
-                  <Link to={`/departments#${department.id}`}>
+                  <Link to={`/about#${department.id}`}>
                     探索{department.name} <ArrowUpRight size={18} />
                   </Link>
                 </div>

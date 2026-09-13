@@ -12,3 +12,5 @@ storage/
 .playwright-cli/
 
 .pnpm-store/
+
+server/generated/

@@ -4,12 +4,12 @@
 
 ## 本地启动
 
-需要 Node.js 22+、pnpm 11.22.0、已启动的 Docker Desktop。
+需要 Node.js 22.12+ 或 24+、pnpm 11.22.0、已启动的 Docker Desktop。
 
 ```bash
 cp .env.example .env
 pnpm install
-pnpm setup
+pnpm run setup
 pnpm dev
 ```
 
@@ -21,7 +21,7 @@ pnpm dev
 pnpm dev
 ```
 
-`pnpm setup` 依次执行 Docker Compose 启动与健康检查、数据库结构迁移、演示数据填充。重复执行不清空已有内容、不重置密码。数据库以命名 volume 持久化，`pnpm db:down` 不删除数据。
+`pnpm run setup` 依次执行 Docker Compose 启动与健康检查、开发影子库准备、Prisma 迁移、Client 生成与演示数据填充。重复执行不清空已有内容、不重置密码。数据库以命名 volume 持久化，`pnpm db:down` 不删除数据。
 
 ## 演示账号
 
@@ -47,6 +47,31 @@ pnpm dev
 
 如 3308 被占用，在 `.env` 同时修改 `MYSQL_PORT` 和 `DATABASE_URL` 中的端口。实际健康检查接口：[http://localhost:3000/api/health](http://localhost:3000/api/health)，只有 MySQL 查询成功后才返回 `database: mysql`。
 
+## 数据模型与后续改表
+
+使用 **Prisma 7.10.0** 管理模型、生成 TypeScript Client，并由 Prisma Migrate 保存迁移历史。`prisma/schema.prisma` 是表结构定义，`prisma/migrations` 保存必须一起提交 Git 的 SQL 迁移。数据库中的 `_prisma_migrations` 记录执行结果。现有 API 查询与事务仍使用 `mysql2`，本次没有改写业务查询。
+
+开发时修改模型，然后执行：
+
+```bash
+pnpm db:dev --name add_user_avatar
+pnpm db:generate
+```
+
+`migrate dev` 使用独立的影子库检查迁移历史；本地 `pnpm run setup` 会创建并授权 `${MYSQL_DATABASE}_shadow`，`.env` 的 `SHADOW_DATABASE_URL` 应指向该库，绝不能指向业务库。它只用于开发，生产部署不需要影子库。
+
+**部署到已准备好 Node、pnpm 和 MySQL 的环境：** 配置 `.env`、安装依赖 `pnpm install --frozen-lockfile` 后执行：
+
+```bash
+pnpm run deploy
+```
+
+此命令先构建，再运行 `prisma migrate deploy`，最后启动服务。迁移失败则停止；重复部署仅执行新增迁移，不重复填演示数据。只更新已构建的版本可用 `pnpm start`。使用 `pnpm run deploy`，避免与 pnpm 自带的 `deploy` 命令混淆。
+
+自动升级依据已提交的迁移文件，**不会把尚未生成迁移的模型修改直接同步进生产库**。不使用 `db push` 或 `migrate reset` 部署。后续变更不要修改已执行的迁移；新增迁移并先在测试库验证。
+
+更多操作和失败恢复见 [数据库迁移说明](docs/database-migrations.md)。
+
 ## 功能
 
 - 首页、社团介绍、五部门介绍、QQ 社群入口。
@@ -65,12 +90,18 @@ pnpm dev                 # 开发，http://localhost:3000
 pnpm typecheck           # TypeScript 严格检查
 pnpm test                # 领域校验与密码测试
 pnpm test:integration    # 真实 MySQL 的 API 流程测试
-pnpm build               # 生产前后端构建
-pnpm start               # 运行生产构建（正式环境需要 HTTPS 反向代理）
+pnpm build               # 生成 Prisma Client 并构建前后端
+pnpm start               # 应用待执行迁移，再运行生产构建
+pnpm run deploy          # 一条命令：构建 → 迁移 → 启动
 pnpm format              # 格式化源码
 pnpm format:check        # 检查格式
 pnpm db:up               # 启动 MySQL，等待健康检查
-pnpm db:migrate          # 应用数据库结构版本
+pnpm db:migrate          # Prisma Migrate 应用未执行的版本
+pnpm db:dev --name xxx   # 修改 schema.prisma 后生成并应用开发迁移
+pnpm db:generate         # 按模型生成 TypeScript Client
+pnpm db:status           # 查看迁移状态
+pnpm db:studio           # 数据库可视化管理
+pnpm test:migrations     # 独立临时 MySQL 库验证迁移与部署失败阻断
 pnpm db:seed             # 写入幂等演示数据，仅用于开发
 pnpm db:down             # 停止数据库，保留数据
 ```
@@ -83,6 +114,7 @@ pnpm db:down             # 停止数据库，保留数据
 - `src/features`：按认证、活动、纪念册、后台划分的业务组件。
 - `src/pages`：页面内容编排与路由。
 - `src/styles`：基础、布局、首页、页面、表单、后台及响应式样式。
+- `prisma`：数据模型与迁移历史；`prisma.config.ts`：连接与开发影子库配置。
 - `server/routes` / `services` / `middleware` / `db`：HTTP 边界、业务事务、权限、数据库。
 - `shared`：领域类型、Zod 校验与社团内容。
 - `public/images`：三张原创 WebP 插画及保留的旧站素材。
@@ -93,4 +125,4 @@ pnpm db:down             # 停止数据库，保留数据
 
 ## 部署边界
 
-构建输出在 `dist/client` 和 `dist/server.js`。保留 `.env` 配置、MySQL、`storage/uploads`，通过 Node 启动。`NODE_ENV=production` 启用 Secure Cookie 和 CSP，需在 HTTPS 反向代理后使用，并将 `APP_ORIGIN` 配置成真实域名。当前邮件用于登录标识，尚未接入邮箱验证或邮件找回密码；共同署名前由发布者征得伙伴同意，未实现邀请审批。完整部署考虑见架构文档。
+构建输出在 `dist/client` 和 `dist/server.js`。部署还需保留 `prisma/`、`prisma.config.ts`、`package.json`、`pnpm-lock.yaml` 和生产依赖；Prisma CLI 是生产依赖，`pnpm start` 可执行迁移。保留 `.env` 配置、MySQL、`storage/uploads`。`NODE_ENV=production` 启用 Secure Cookie 和 CSP，需在 HTTPS 反向代理后使用，并将 `APP_ORIGIN` 配置成真实域名。当前邮件用于登录标识，尚未接入邮箱验证或邮件找回密码；共同署名前由发布者征得伙伴同意，未实现邀请审批。完整部署考虑见架构文档。

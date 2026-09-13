@@ -6,6 +6,7 @@ import { departments } from '@shared/content';
 import type { ClubEvent } from '@shared/types';
 import type { SceneProps } from './frame';
 import { useMediaQuery } from '@/hooks/use-media-query';
+import { SceneMascot } from './scene-mascot';
 
 export function Introduction({ progress, index }: SceneProps) {
   const spread = useTransform(progress, [index - 1, index, index + 1], [0.65, 1, 1.4]);
@@ -68,6 +69,18 @@ export function EventScene({
         </span>
       </motion.div>
       <div className="cinema-event-copy">
+        <SceneMascot
+          pose={
+            event.category.includes('摄影')
+              ? 'photographer'
+              : event.category.includes('漫画')
+                ? 'artist'
+                : 'keeper'
+          }
+          progress={progress}
+          index={index}
+          className="mascot-event-ghost"
+        />
         <span className="eyebrow">
           NEXT CHAPTER / {String(order + 1).padStart(2, '0')} — {String(total).padStart(2, '0')}
         </span>
@@ -128,7 +141,7 @@ function WorldCard({ progress, index, order }: SceneProps & { order: number }) {
       className="cinema-world-card"
       style={{ x, y, rotate, zIndex: 5 - Math.abs(order - 2) }}
     >
-      <Link to={`/departments#${department.id}`}>
+      <Link to={`/about#${department.id}`}>
         <img src={`/images/${worldImages[order]}.webp`} alt="" />
         <span>
           <small>
@@ -149,7 +162,10 @@ export function WorldsScene(props: SceneProps) {
         <h2>
           你的热爱，
           <br className="cinema-mobile-break" />
-          <span className="serif-accent">在哪个次元？</span>
+          <span className="cinema-world-question">
+            <span className="serif-accent">在哪个次元？</span>
+            <SceneMascot pose="artist" {...props} className="mascot-sentence-companion" />
+          </span>
         </h2>
         <p>五个部门，无数种一起发光的方式。</p>
       </div>
@@ -158,7 +174,7 @@ export function WorldsScene(props: SceneProps) {
           <WorldCard key={d.id} {...props} order={i} />
         ))}
       </div>
-      <Link className="text-arrow cinema-world-link" to="/departments">
+      <Link className="text-arrow cinema-world-link" to="/about#departments">
         寻找我的次元 <ArrowUpRight size={18} />
       </Link>
     </div>

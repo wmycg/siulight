@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { noteColors } from './types';
 import { categories, departments } from './content';
 const text = (min: number, max: number) =>
   z.string().trim().min(min, `至少填写 ${min} 个字`).max(max, `最多 ${max} 个字`);
@@ -68,4 +69,10 @@ export const applicationSchema = z.object({
 export const passwordSchema = z.object({
   currentPassword: z.string().max(128),
   newPassword: z.string().min(10, '新密码至少 10 位').max(128),
+});
+
+export const wallNoteSchema = z.object({
+  body: text(1, 280),
+  nickname: text(0, 20).default(''),
+  color: z.enum(noteColors).default('random'),
 });

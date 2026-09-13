@@ -11,6 +11,8 @@
 @import './styles/collections.css';
 @import './styles/cinema.css';
 @import './styles/cinema-mobile.css';
+@import './styles/cinema-mascot.css';
+@import './styles/wall.css';
 
 @theme inline {
   --color-background: var(--background);

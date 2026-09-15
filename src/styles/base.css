@@ -25,6 +25,10 @@ body {
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
 }
+/* Radix Dialog temporarily writes pointer-events:none on body. Keep stale locks from disabling the page. */
+body[style*='pointer-events: none'] {
+  pointer-events: auto !important;
+}
 button,
 a,
 input,

@@ -39,7 +39,7 @@ export function EventsPage() {
           </h1>
           <p>创作、放映、漫展、散步。和喜欢的人，做喜欢的事。</p>
           <div className="event-intro-note">
-            <span>ANIMATION · COMICS · PHOTOGRAPHY</span>
+            <span>ANIMATION · PHOTOGRAPHY · GAME · MUSIC · COSPLAY</span>
             <span>MEET YOU THERE ↗</span>
           </div>
         </div>

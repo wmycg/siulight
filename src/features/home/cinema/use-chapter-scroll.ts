@@ -29,7 +29,8 @@ export function useChapterScroll(
       guard.current.settlingUntil = performance.now() + 800;
       guard.current.target = target;
       guard.current.total = 0;
-      window.scrollTo({ top: target * step, behavior: 'smooth' });
+      // Use an immediate jump. Native smooth scrolling queues animations when users click rapidly.
+      window.scrollTo({ top: target * step, behavior: 'auto' });
     },
     [step, last, memoryEnd],
   );

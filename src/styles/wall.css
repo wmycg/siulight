@@ -213,11 +213,6 @@
 .wall-toolbar .wall-write:hover {
   background: #913138;
 }
-.toolbar-divider {
-  height: 20px;
-  width: 1px;
-  background: #e8dbcc;
-}
 .wall-footer-note {
   position: absolute;
   bottom: 24px;
@@ -377,88 +372,6 @@
   align-items: center;
   gap: 7px;
 }
-.claw-stage {
-  height: 100%;
-  padding: 18px 24px 100px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  background: radial-gradient(ellipse at 50% 75%, #e9d8c9, #f6f1e8 70%);
-}
-.claw-caption {
-  text-align: center;
-  margin-bottom: 13px;
-}
-.claw-caption .eyebrow {
-  font-size: 8px;
-}
-.claw-caption p {
-  font: 21px/1.7 var(--serif);
-  margin-top: 7px;
-}
-.claw-stage canvas {
-  min-height: 0;
-  max-height: calc(100% - 132px);
-  width: auto;
-  max-width: 100%;
-  object-fit: contain;
-  filter: drop-shadow(0 15px 22px #85624821);
-}
-.claw-console {
-  display: flex;
-  gap: 35px;
-  align-items: center;
-  margin-top: 15px;
-  flex-shrink: 0;
-}
-.claw-direction {
-  display: flex;
-  gap: 10px;
-}
-.claw-direction button {
-  display: grid;
-  place-items: center;
-  background: #fffbf3;
-  border: 1px solid #dbc5b4;
-  border-radius: 50%;
-  height: 40px;
-  width: 40px;
-  box-shadow: 0 3px 0 #cbb2a1;
-  touch-action: none;
-}
-.claw-direction button:active {
-  transform: translateY(2px);
-  box-shadow: 0 1px 0 #cbb2a1;
-}
-.claw-direction button:disabled {
-  opacity: 0.5;
-}
-.claw-slider {
-  width: 260px;
-  margin-top: 10px;
-  display: block;
-  height: 12px;
-}
-.claw-slider input {
-  width: 100%;
-  height: 4px;
-  accent-color: #ad3c43;
-  display: block;
-}
-.claw-status {
-  color: #8c7666;
-  font-size: 10px;
-  min-height: 19px;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  margin-top: 6px;
-}
-.claw-stage:fullscreen {
-  height: 100dvh;
-  padding-bottom: 25px;
-}
 @media (max-width: 767px) {
   .wall-page {
     height: calc(100dvh - 71px);
@@ -482,9 +395,6 @@
   .wall-toolbar .wall-write {
     margin-left: 3px;
   }
-  .toolbar-divider {
-    margin: 0 3px;
-  }
   .wall-footer-note {
     display: none;
   }
@@ -492,37 +402,11 @@
     bottom: 81px;
     font-size: 9px;
   }
-  .claw-stage {
-    padding: 15px 16px 90px;
-  }
-  .claw-caption p {
-    font-size: 20px;
-  }
-  .claw-stage canvas {
-    width: min(100%, 550px);
-  }
-  .claw-console {
-    gap: 25px;
-    margin-top: 12px;
-  }
-  .claw-console > button {
-    font-size: 12px;
-  }
   .reader-body {
     font-size: 20px;
   }
 }
 @media (max-height: 760px) and (min-width: 768px) {
-  .claw-caption {
-    display: none;
-  }
-  .claw-stage {
-    padding-top: 12px;
-    padding-bottom: 88px;
-  }
-  .claw-stage canvas {
-    max-height: calc(100% - 93px);
-  }
 }
 @media (max-width: 360px) {
   .wall-toolbar button {

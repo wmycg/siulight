@@ -84,6 +84,23 @@ export interface WallPageData {
   nextCursor: number | null;
 }
 
+export interface AdminWallNote {
+  id: number;
+  body: string;
+  nickname: string;
+  color: NoteColor;
+  isDemo: boolean;
+  registered: boolean;
+  createdAt: string;
+}
+
+export interface AdminWallPage {
+  items: AdminWallNote[];
+  total: number;
+  page: number;
+  pages: number;
+}
+
 export interface MemoryChapter {
   month: string;
   count: number;

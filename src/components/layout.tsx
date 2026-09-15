@@ -1,5 +1,6 @@
-import { useLayoutEffect, useState } from 'react';
-import { Link, NavLink, Outlet, useLocation } from 'react-router-dom';
+import { useLayoutEffect, useState, type MouseEvent } from 'react';
+import { flushSync } from 'react-dom';
+import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { ArrowUpRight, Menu, X, LogOut, Settings } from 'lucide-react';
 import { Button } from './ui/button';
 import { useAuth } from '@/features/auth/auth-provider';
@@ -33,9 +34,23 @@ export function Layout() {
   const { user, openLogin, logout } = useAuth();
   const [menu, setMenu] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
+  function cancelScrollBeforeNavigation() {
+    const root = document.documentElement;
+    const previous = root.style.scrollBehavior;
+    root.style.scrollBehavior = 'auto';
+    window.scrollTo(0, window.scrollY);
+    root.style.scrollBehavior = previous;
+  }
+  function go(to: string, event: MouseEvent<HTMLAnchorElement>) {
+    event.preventDefault();
+    cancelScrollBeforeNavigation();
+    flushSync(() => navigate(to));
+  }
   useLayoutEffect(() => {
     setMenu(false);
-    window.scrollTo({ top: 0, behavior: 'instant' });
+    cancelScrollBeforeNavigation();
+    window.scrollTo({ top: 0, behavior: 'auto' });
     const label = navItems.find((i) => i.to === location.pathname)?.label || '微光漫摄';
     document.title = `${label} · 微光漫摄`;
   }, [location.pathname]);
@@ -49,9 +64,15 @@ export function Layout() {
           <Brand />
           <nav aria-label="主导航" className="desktop-nav">
             {navItems.map((i) => (
-              <NavLink key={i.to} to={i.to} end={i.to === '/'}>
+              <a
+                key={i.to}
+                href={i.to}
+                className={location.pathname === i.to ? 'active' : undefined}
+                aria-current={location.pathname === i.to ? 'page' : undefined}
+                onClick={(event) => go(i.to, event)}
+              >
                 {i.label}
-              </NavLink>
+              </a>
             ))}
           </nav>
           <div className="header-actions">
@@ -109,13 +130,19 @@ export function Layout() {
         {menu && (
           <nav id="mobile-navigation" className="mobile-nav" aria-label="手机导航">
             {navItems.map((i, n) => (
-              <NavLink key={i.to} to={i.to} end={i.to === '/'}>
+              <a
+                key={i.to}
+                href={i.to}
+                className={location.pathname === i.to ? 'active' : undefined}
+                aria-current={location.pathname === i.to ? 'page' : undefined}
+                onClick={(event) => go(i.to, event)}
+              >
                 <span>
                   <small>0{n + 1}</small>
                   {i.label}
                 </span>
                 <ArrowUpRight size={18} />
-              </NavLink>
+              </a>
             ))}
             <Link to="/join">
               加入我们
@@ -153,7 +180,7 @@ export function Layout() {
         </div>
         <div className="footer-bottom">
           <span>© {new Date().getFullYear()} 微光漫摄协会</span>
-          <span className="footer-note">ANIMATION · COMICS · GAMES · PHOTOGRAPHY</span>
+          <span className="footer-note">ANIMATION · MUSIC · GAMES · PHOTOGRAPHY · COSPLAY</span>
           <Link to="/admin">
             社团管理
             <ArrowUpRight size={12} />

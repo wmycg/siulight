@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { Plus, Pencil, Trash2, Shield, ArrowUpRight } from 'lucide-react';
+import { Plus, Pencil, Trash2, Shield, ArrowUpRight, ChevronLeft, ChevronRight } from 'lucide-react';
 import { toast } from 'sonner';
-import type { Application, AuditLog, ClubEvent, User } from '@shared/types';
+import type { AdminWallPage, Application, AuditLog, ClubEvent, User } from '@shared/types';
 import { departments } from '@shared/content';
 import { useAuth } from '@/features/auth/auth-provider';
 import { api, send, queryClient } from '@/lib/api';
@@ -31,6 +31,8 @@ export function AdminPage() {
   const [password, setPassword] = useState(false);
   const [search, setSearch] = useState('');
   const [status, setStatus] = useState('all');
+  const [wallSearch, setWallSearch] = useState('');
+  const [wallPage, setWallPage] = useState(1);
   const [confirm, setConfirm] = useState<{ title: string; path: string } | null>(null);
   const [busy, setBusy] = useState(false);
   const events = useQuery({
@@ -52,6 +54,15 @@ export function AdminPage() {
     queryKey: ['admin-users'],
     queryFn: () => api<User[]>('/admin/users'),
     enabled: user?.role === 'superadmin' && tab === 'users',
+  });
+  const wall = useQuery({
+    queryKey: ['admin-wall', wallPage, wallSearch],
+    queryFn: () => {
+      const params = new URLSearchParams({ page: String(wallPage) });
+      if (wallSearch.trim()) params.set('q', wallSearch.trim());
+      return api<AdminWallPage>(`/admin/wall?${params}`);
+    },
+    enabled: allowed && tab === 'wall',
   });
   const applicationItems = applications.data?.filter(
     (a) =>
@@ -113,6 +124,7 @@ export function AdminPage() {
         <TabsList className="admin-tabs">
           <TabsTrigger value="events">活动管理</TabsTrigger>
           <TabsTrigger value="applications">入社申请</TabsTrigger>
+          <TabsTrigger value="wall">留言墙</TabsTrigger>
           <TabsTrigger value="logs">操作日志</TabsTrigger>
           {user.role === 'superadmin' && <TabsTrigger value="users">账号管理</TabsTrigger>}
         </TabsList>
@@ -256,6 +268,87 @@ export function AdminPage() {
                 </article>
               ))}
             </div>
+          )}
+        </TabsContent>
+        <TabsContent value="wall">
+          <div className="admin-toolbar">
+            <h2>
+              留言墙 <small>{wall.data?.total || 0}</small>
+            </h2>
+            <Input
+              className="admin-wall-search"
+              placeholder="搜索留言或署名"
+              aria-label="搜索留言墙"
+              value={wallSearch}
+              onChange={(e) => {
+                setWallSearch(e.target.value);
+                setWallPage(1);
+              }}
+            />
+          </div>
+          {wall.isPending ? (
+            <Loading label="正在翻看留言墙…" />
+          ) : wall.error ? (
+            <ErrorState error={wall.error} retry={() => wall.refetch()} />
+          ) : !wall.data?.items.length ? (
+            <EmptyState title={wallSearch ? '没有找到匹配的留言' : '留言墙还是空的'} />
+          ) : (
+            <>
+              <div className="wall-admin-list">
+                {wall.data.items.map((note) => (
+                  <article key={note.id} className="wall-admin-item">
+                    <div className="wall-admin-heading">
+                      <div>
+                        <h3>{note.nickname}</h3>
+                        <small>
+                          {note.registered ? '已登录成员' : '游客'} · {note.createdAt}
+                          {note.isDemo ? ' · 演示' : ''}
+                        </small>
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        aria-label={`删除来自${note.nickname}的留言`}
+                        onClick={() =>
+                          setConfirm({
+                            title: `删除来自「${note.nickname}」的这张纸条？`,
+                            path: `/admin/wall/${note.id}`,
+                          })
+                        }
+                      >
+                        <Trash2 />
+                      </Button>
+                    </div>
+                    <p>{note.body}</p>
+                  </article>
+                ))}
+              </div>
+              {wall.data.pages > 1 && (
+                <div className="admin-pagination">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    disabled={wallPage <= 1}
+                    onClick={() => setWallPage((page) => page - 1)}
+                  >
+                    <ChevronLeft />
+                    上一页
+                  </Button>
+                  <span>
+                    {wall.data.page} / {wall.data.pages}
+                  </span>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    disabled={wallPage >= wall.data.pages}
+                    onClick={() => setWallPage((page) => page + 1)}
+                  >
+                    下一页
+                    <ChevronRight />
+                  </Button>
+                </div>
+              )}
+            </>
           )}
         </TabsContent>
         <TabsContent value="logs">

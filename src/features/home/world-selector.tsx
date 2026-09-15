@@ -11,7 +11,7 @@ const scenes = [
     image: 'studio',
     position: '50% 50%',
     title: '让想象，有了形状。',
-    caption: '配色、角色、版式。让每一个灵感，都有自己的表达。',
+    caption: '角色、场景、分镜与动画。让每一个故事，都有自己的生命。',
   },
   {
     image: 'summer',
@@ -28,14 +28,14 @@ const scenes = [
   {
     image: 'studio',
     position: '20% 75%',
-    title: '故事，从第一根线条开始。',
-    caption: '原创、同人、分镜与涂鸦。每个角色，都等着被你画出来。',
+    title: '喜欢，从一首歌开始。',
+    caption: '日系音乐、歌曲分享与现场活动。让喜欢的旋律，遇见同频的人。',
   },
   {
     image: 'evening',
     position: '70% 50%',
-    title: '让热爱，真的发生。',
-    caption: '从一个好点子，到一场难忘的相聚。这次，由我们来策划。',
+    title: '让热爱，真的登场。',
+    caption: '准备服装、角色和相机。一起出 cos、逛漫展，把喜欢带到现实里。',
   },
 ];
 

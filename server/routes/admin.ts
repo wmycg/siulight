@@ -28,6 +28,51 @@ adminRouter.patch('/applications/:id', async (req, res) => {
 adminRouter.get('/logs', async (_req, res) =>
   res.json(await rows('SELECT * FROM audit_logs ORDER BY id DESC LIMIT 200')),
 );
+const wallQuery = z.object({
+  q: z.string().trim().max(100).optional(),
+  page: z.string().regex(/^[1-9]\d{0,3}$/).optional(),
+});
+const wallId = z.coerce.number().int().positive().max(2147483647);
+adminRouter.get('/wall', async (req, res) => {
+  const query = wallQuery.parse(req.query);
+  const page = Math.max(1, Math.min(10000, Number(query.page) || 1));
+  const limit = 30;
+  const keyword = query.q || '';
+  const where = keyword ? 'WHERE body LIKE ? OR nickname LIKE ?' : '';
+  const values = keyword ? [`%${keyword}%`, `%${keyword}%`] : [];
+  const [count] = await rows<{ total: number }>(
+    `SELECT COUNT(*) total FROM wall_notes ${where}`,
+    values,
+  );
+  const items = await rows<{
+    id: number;
+    body: string;
+    nickname: string;
+    color: string;
+    isDemo: boolean | number;
+    registered: boolean | number;
+    createdAt: string;
+  }>(
+    `SELECT id,body,nickname,color,isDemo,(userId IS NOT NULL) registered,createdAt FROM wall_notes ${where} ORDER BY id DESC LIMIT ${limit} OFFSET ${(page - 1) * limit}`,
+    values,
+  );
+  res.json({
+    items: items.map((item) => ({ ...item, isDemo: Boolean(item.isDemo), registered: Boolean(item.registered) })),
+    total: count.total,
+    page,
+    pages: Math.ceil(count.total / limit),
+  });
+});
+adminRouter.delete('/wall/:id', async (req, res) => {
+  const id = wallId.parse(req.params.id);
+  const result = await run('DELETE FROM wall_notes WHERE id=?', [id]);
+  if (!result.affectedRows) {
+    res.status(404).json({ message: '这张纸条已经被收走了' });
+    return;
+  }
+  await audit(req.user!.name, `删除留言墙纸条 ${id}`);
+  res.json({ ok: true });
+});
 adminRouter.get('/users', superOnly, async (_req, res) =>
   res.json(
     await rows('SELECT id,name,email,role,color,bio FROM users ORDER BY createdAt DESC LIMIT 1000'),

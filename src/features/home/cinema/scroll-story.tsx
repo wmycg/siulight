@@ -36,6 +36,11 @@ export function ScrollStory({
     document.documentElement.classList.add('cinema-mode');
     return () => {
       document.documentElement.classList.remove('cinema-mode');
+      const root = document.documentElement;
+      const previous = root.style.scrollBehavior;
+      root.style.scrollBehavior = 'auto';
+      window.scrollTo({ top: window.scrollY, left: window.scrollX, behavior: 'auto' });
+      root.style.scrollBehavior = previous;
     };
   }, []);
   const geometry = useStageGeometry();
@@ -62,6 +67,7 @@ export function ScrollStory({
     last,
   ];
   const [active, setActive] = useState(0);
+  const activeRef = useRef(0);
   const { scrollY } = useScroll();
   const raw = useTransform(scrollY, (value) => {
     const position = Math.max(0, Math.min(last, value / geometry.step));
@@ -79,9 +85,13 @@ export function ScrollStory({
     progress.jump(0);
   }, [scrollY, progress]);
   const departure = useTransform(progress, [0, 1], [0, 1]);
-  useMotionValueEvent(progress, 'change', (value) =>
-    setActive(stops.reduce((chapter, stop, i) => (value >= stop - 0.5 ? i : chapter), 0)),
-  );
+  useMotionValueEvent(progress, 'change', (value) => {
+    const next = stops.reduce((chapter, stop, i) => (value >= stop - 0.5 ? i : chapter), 0);
+    if (next !== activeRef.current) {
+      activeRef.current = next;
+      setActive(next);
+    }
+  });
   const turnTo = useChapterScroll(geometry.step, last, memoryIndex, worldIndex - 1);
   function go(index: number) {
     turnTo(stops[Math.max(0, Math.min(labels.length - 1, index))]);

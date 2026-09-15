@@ -20,7 +20,7 @@ export const colorLabels: Record<NoteColor, string> = {
 export function resolvePaperColor(color: NoteColor, id = 0): string {
   if (color !== 'random') return paperColors[color];
   // Resolve automatic colours once per note identity, not once per animation frame.
-  // This keeps the wall, reader and claw in sync without repaint flicker.
+  // Keep the wall and reader in sync without repaint flicker.
   const colors = Object.values(paperColors);
   const mixed = Math.sin(id * 127.1 + 311.7) * 43758.5453;
   return colors[Math.floor((mixed - Math.floor(mixed)) * colors.length)];

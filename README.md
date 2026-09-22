@@ -125,4 +125,4 @@ pnpm db:down             # 停止数据库，保留数据
 
 ## 部署边界
 
-构建输出在 `dist/client` 和 `dist/server.js`。部署还需保留 `prisma/`、`prisma.config.ts`、`package.json`、`pnpm-lock.yaml` 和生产依赖；Prisma CLI 是生产依赖，`pnpm start` 可执行迁移。保留 `.env` 配置、MySQL、`storage/uploads`。`NODE_ENV=production` 启用 Secure Cookie 和 CSP，需在 HTTPS 反向代理后使用，并将 `APP_ORIGIN` 配置成真实域名。当前邮件用于登录标识，尚未接入邮箱验证或邮件找回密码；共同署名前由发布者征得伙伴同意，未实现邀请审批。完整部署考虑见架构文档。
+构建输出在 `dist/client` 和 `dist/server.js`。部署还需保留 `prisma/`、`prisma.config.ts`、`package.json`、`pnpm-lock.yaml` 和生产依赖；Prisma CLI 是生产依赖，`pnpm start` 可执行迁移。保留 `.env` 配置、MySQL、`storage/uploads`。`NODE_ENV=production` 启用 Secure Cookie 和 CSP，需在 HTTPS 反向代理后使用，并将 `APP_ORIGIN` 配置成真实域名；多个 HTTPS 域名可用英文逗号写入 `APP_ORIGINS`。当前邮件用于登录标识，尚未接入邮箱验证或邮件找回密码；共同署名前由发布者征得伙伴同意，未实现邀请审批。完整部署考虑见架构文档。

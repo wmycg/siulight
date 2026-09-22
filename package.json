@@ -9,11 +9,12 @@
   "scripts": {
     "dev": "tsx watch server/index.ts",
     "build": "pnpm db:generate && tsc --noEmit && vite build && esbuild server/index.ts --bundle --platform=node --format=esm --packages=external --outfile=dist/server.js",
-    "start": "pnpm db:migrate && NODE_ENV=production node dist/server.js",
+    "start": "pnpm db:migrate:deploy && NODE_ENV=production node dist/server.js",
     "typecheck": "tsc --noEmit",
     "db:up": "docker compose up -d --wait",
     "db:down": "docker compose down",
     "db:migrate": "prisma migrate dev",
+    "db:migrate:deploy": "prisma migrate deploy",
     "db:seed": "tsx server/db/seed.ts",
     "setup": "pnpm db:up && pnpm db:shadow && pnpm db:migrate && pnpm db:generate && pnpm db:seed",
     "test": "tsx --test tests/*.test.ts",

@@ -12,6 +12,7 @@ import { eventRouter } from './routes/events';
 import { adminRouter } from './routes/admin';
 import { uploadRouter, uploadDirectory } from './routes/uploads';
 export const app = express();
+if (config.production) app.set('trust proxy', 1);
 app.disable('x-powered-by');
 app.use(
   helmet({
@@ -35,7 +36,10 @@ app.use(
     res.setHeader('Cache-Control', 'no-store');
     if (!['GET', 'HEAD', 'OPTIONS'].includes(req.method)) {
       const origin = req.get('origin');
-      if ((origin && origin !== config.origin) || req.get('sec-fetch-site') === 'cross-site') {
+      if (
+        (origin && !config.origins.includes(origin)) ||
+        req.get('sec-fetch-site') === 'cross-site'
+      ) {
         res.status(403).json({ message: '请求来源不受信任' });
         return;
       }

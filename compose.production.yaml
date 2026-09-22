@@ -1,0 +1,52 @@
+name: siulight
+services:
+  mysql:
+    image: mysql:8.4
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-siulight}
+      MYSQL_USER: ${MYSQL_USER:-siulight}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:?MYSQL_PASSWORD is required}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?MYSQL_ROOT_PASSWORD is required}
+    command: ['--character-set-server=utf8mb4', '--collation-server=utf8mb4_unicode_ci']
+    volumes:
+      - mysql-data:/var/lib/mysql
+    healthcheck:
+      test: ['CMD-SHELL', 'mysqladmin ping -h localhost -u root -p$$MYSQL_ROOT_PASSWORD --silent']
+      interval: 5s
+      timeout: 5s
+      retries: 30
+      start_period: 20s
+
+  app:
+    image: ${APP_IMAGE:-siulight-app:3.0.0}
+    restart: unless-stopped
+    depends_on:
+      mysql:
+        condition: service_healthy
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      APP_ORIGIN: ${APP_ORIGIN:?APP_ORIGIN is required}
+      APP_ORIGINS: ${APP_ORIGINS:-}
+      DATABASE_URL: mysql://${MYSQL_USER:-siulight}:${MYSQL_PASSWORD}@mysql:3306/${MYSQL_DATABASE:-siulight}
+    ports:
+      - '127.0.0.1:${APP_PORT:-3000}:3000'
+    volumes:
+      - uploads:/app/storage/uploads
+    healthcheck:
+      test:
+        [
+          'CMD',
+          'node',
+          '-e',
+          "fetch('http://127.0.0.1:3000/api/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 30s
+
+volumes:
+  mysql-data:
+  uploads:

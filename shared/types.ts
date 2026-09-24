@@ -80,7 +80,6 @@ export interface WallNote {
 }
 export interface WallPageData {
   items: WallNote[];
-  total: number;
   nextCursor: number | null;
 }
 

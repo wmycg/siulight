@@ -37,6 +37,7 @@ cp docker.env.example .env
 - 两个数据库密码都换成长随机密码。当前连接串由 Compose 自动生成，密码建议只使用字母、数字、下划线和短横线。
 - `APP_PORT` 是服务器暴露的端口；通常由 Nginx 或 Caddy 反向代理到此端口。
 - `MYSQL_PASSWORD` 会进入数据库连接 URL，使用 `openssl rand -hex 24` 生成只含十六进制字符的密码。
+- 应用启动时会校验 `APP_ORIGIN`/`APP_ORIGINS`、`DATABASE_URL` 和端口；变量缺失或域名格式错误会立即退出并在日志中说明。
 
 启动已导入的镜像：
 

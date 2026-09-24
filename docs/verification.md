@@ -61,7 +61,7 @@
 
 ## Prisma 数据库版本管理（2026-09-13）
 
-- 使用 pnpm 安装并固定 `prisma`、`@prisma/client` 7.10.0，移除 Knex 与旧手写迁移脚本。
+- 使用 pnpm 安装并固定 Prisma CLI 7.10.0 负责迁移，业务服务使用 mysql2，移除 Knex、Prisma Client 与旧手写迁移脚本。
 - 经用户明确允许，清空本地旧测试库，执行 Prisma 初始迁移，恢复 6 个演示账号、4 条活动、6 条纪念。
 - `pnpm db:dev --name verify_schema`：开发影子库正常，模型与迁移已同步，没有生成多余迁移。
 - `prisma migrate diff --from-config-datasource --to-schema prisma/schema.prisma --exit-code`：无差异。

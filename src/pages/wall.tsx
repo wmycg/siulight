@@ -8,6 +8,8 @@ import type { WallNote, WallPageData } from '@shared/types';
 import { NoteWall } from '@/features/wall/note-wall';
 import { NoteComposer, NoteReader } from '@/features/wall/note-dialogs';
 
+const MAX_RENDERED_NOTES = 240;
+
 export function WallPage() {
   const { user } = useAuth();
   const reduced = useReducedMotion();
@@ -22,8 +24,8 @@ export function WallPage() {
   const wall = useInfiniteQuery({
     queryKey: ['wall', user?.id || 'guest'],
     initialPageParam: null as number | null,
-    queryFn: ({ pageParam }) =>
-      api<WallPageData>(`/wall${pageParam ? `?cursor=${pageParam}` : ''}`),
+    queryFn: ({ pageParam, signal }) =>
+      api<WallPageData>(`/wall${pageParam ? `?cursor=${pageParam}` : ''}`, { signal }),
     getNextPageParam: (page) => page.nextCursor,
   });
   const notes = useMemo(
@@ -41,7 +43,8 @@ export function WallPage() {
     setReading(null);
   }, [user?.id]);
   function explore() {
-    if (wall.hasNextPage && !wall.isFetchingNextPage) void wall.fetchNextPage();
+    if (wall.hasNextPage && !wall.isFetchingNextPage && notes.length < MAX_RENDERED_NOTES)
+      void wall.fetchNextPage();
   }
   function wind() {
     if (windy || !notes.length) return;
@@ -66,7 +69,7 @@ export function WallPage() {
           </div>
         ) : (
           <NoteWall
-            notes={notes}
+            notes={notes.slice(0, MAX_RENDERED_NOTES)}
             shuffle={shuffle}
             windy={windy}
             focusId={focusId}

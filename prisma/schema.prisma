@@ -1,8 +1,3 @@
-generator client {
-  provider = "prisma-client"
-  output   = "../server/generated/prisma"
-}
-
 datasource db {
   provider = "mysql"
 }
@@ -19,6 +14,7 @@ model Application {
   createdAt  DateTime          @default(now()) @db.Timestamp(0)
 
   @@map("applications")
+  @@index([status, createdAt], map: "application_status_created")
 }
 
 model AuditLog {
@@ -28,6 +24,7 @@ model AuditLog {
   createdAt DateTime @default(now()) @db.Timestamp(0)
 
   @@map("audit_logs")
+  @@index([createdAt], map: "audit_created")
 }
 
 model EventAttendee {
@@ -131,6 +128,7 @@ model User {
   wallNotes              WallNote[]
 
   @@map("users")
+  @@index([createdAt], map: "user_created")
 }
 
 enum UserRole {

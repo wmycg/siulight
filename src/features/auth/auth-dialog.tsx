@@ -36,7 +36,13 @@ export function AuthDialog({
     try {
       const user = await send<User>(`/auth/${register ? 'register' : 'login'}`, values);
       queryClient.setQueryData(['me'], user);
-      await queryClient.invalidateQueries();
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ['events'] }),
+        queryClient.invalidateQueries({ queryKey: ['milestones'] }),
+        queryClient.invalidateQueries({ queryKey: ['wall'] }),
+        queryClient.invalidateQueries({ queryKey: ['member'] }),
+        queryClient.invalidateQueries({ queryKey: ['stats'] }),
+      ]);
       onOpenChange(false);
     } catch (e) {
       setError((e as Error).message);

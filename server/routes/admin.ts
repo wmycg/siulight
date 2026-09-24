@@ -7,11 +7,43 @@ import { eventSchema, registerSchema } from '../../shared/validation';
 import { audit } from '../services/audit';
 import { hashPassword } from '../services/password';
 import { updateEvent } from '../services/events';
+import type { Application, AuditLog, User } from '../../shared/types';
 export const adminRouter = Router();
 adminRouter.use(adminOnly);
-adminRouter.get('/applications', async (_req, res) =>
-  res.json(await rows('SELECT * FROM applications ORDER BY createdAt DESC LIMIT 1000')),
-);
+const pageQuery = z.object({
+  page: z.coerce.number().int().min(1).max(10000).default(1),
+  q: z.string().trim().max(100).default(''),
+  status: z.enum(['all', 'pending', 'contacted', 'accepted']).default('all'),
+});
+const adminPageSize = 30;
+adminRouter.get('/applications', async (req, res) => {
+  const query = pageQuery.parse(req.query);
+  const where: string[] = [];
+  const values: string[] = [];
+  if (query.q) {
+    where.push('(nickname LIKE ? OR realName LIKE ? OR studentId LIKE ? OR qq LIKE ?)');
+    values.push(...Array(4).fill(`%${query.q}%`));
+  }
+  if (query.status !== 'all') {
+    where.push('status=?');
+    values.push(query.status);
+  }
+  const clause = where.length ? `WHERE ${where.join(' AND ')}` : '';
+  const [count] = await rows<{ total: number }>(
+    `SELECT COUNT(*) total FROM applications ${clause}`,
+    values,
+  );
+  const items = await rows<Application>(
+    `SELECT * FROM applications ${clause} ORDER BY createdAt DESC LIMIT ${adminPageSize} OFFSET ${(query.page - 1) * adminPageSize}`,
+    values,
+  );
+  res.json({
+    items,
+    total: count.total,
+    page: query.page,
+    pages: Math.ceil(count.total / adminPageSize),
+  });
+});
 adminRouter.patch('/applications/:id', async (req, res) => {
   const id = z.string().uuid().parse(req.params.id);
   const { status } = z
@@ -25,12 +57,20 @@ adminRouter.patch('/applications/:id', async (req, res) => {
   await audit(req.user!.name, `入社申请 ${id} → ${status}`);
   res.json({ ok: true });
 });
-adminRouter.get('/logs', async (_req, res) =>
-  res.json(await rows('SELECT * FROM audit_logs ORDER BY id DESC LIMIT 200')),
-);
+adminRouter.get('/logs', async (req, res) => {
+  const { page } = pageQuery.parse(req.query);
+  const [count] = await rows<{ total: number }>('SELECT COUNT(*) total FROM audit_logs');
+  const items = await rows<AuditLog>(
+    `SELECT * FROM audit_logs ORDER BY id DESC LIMIT ${adminPageSize} OFFSET ${(page - 1) * adminPageSize}`,
+  );
+  res.json({ items, total: count.total, page, pages: Math.ceil(count.total / adminPageSize) });
+});
 const wallQuery = z.object({
   q: z.string().trim().max(100).optional(),
-  page: z.string().regex(/^[1-9]\d{0,3}$/).optional(),
+  page: z
+    .string()
+    .regex(/^[1-9]\d{0,3}$/)
+    .optional(),
 });
 const wallId = z.coerce.number().int().positive().max(2147483647);
 adminRouter.get('/wall', async (req, res) => {
@@ -57,7 +97,11 @@ adminRouter.get('/wall', async (req, res) => {
     values,
   );
   res.json({
-    items: items.map((item) => ({ ...item, isDemo: Boolean(item.isDemo), registered: Boolean(item.registered) })),
+    items: items.map((item) => ({
+      ...item,
+      isDemo: Boolean(item.isDemo),
+      registered: Boolean(item.registered),
+    })),
     total: count.total,
     page,
     pages: Math.ceil(count.total / limit),
@@ -73,11 +117,14 @@ adminRouter.delete('/wall/:id', async (req, res) => {
   await audit(req.user!.name, `删除留言墙纸条 ${id}`);
   res.json({ ok: true });
 });
-adminRouter.get('/users', superOnly, async (_req, res) =>
-  res.json(
-    await rows('SELECT id,name,email,role,color,bio FROM users ORDER BY createdAt DESC LIMIT 1000'),
-  ),
-);
+adminRouter.get('/users', superOnly, async (req, res) => {
+  const { page } = pageQuery.parse(req.query);
+  const [count] = await rows<{ total: number }>('SELECT COUNT(*) total FROM users');
+  const items = await rows<User>(
+    `SELECT id,name,email,role,color,bio FROM users ORDER BY createdAt DESC LIMIT ${adminPageSize} OFFSET ${(page - 1) * adminPageSize}`,
+  );
+  res.json({ items, total: count.total, page, pages: Math.ceil(count.total / adminPageSize) });
+});
 adminRouter.post('/users', superOnly, async (req, res) => {
   const data = registerSchema.extend({ role: z.enum(['admin', 'superadmin']) }).parse(req.body);
   const id = randomUUID();

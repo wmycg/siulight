@@ -18,6 +18,19 @@
   max-width: 100%;
   overflow-x: auto;
 }
+.admin-pager {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  margin: 24px 0 8px;
+}
+.admin-pager span {
+  min-width: 56px;
+  text-align: center;
+  color: var(--muted-foreground);
+  font-size: 13px;
+}
 .admin-toolbar {
   display: flex;
   justify-content: space-between;

@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { Plus, Pencil, Trash2, Shield, ArrowUpRight } from 'lucide-react';
 import { toast } from 'sonner';
-import type { Application, AuditLog, ClubEvent, User } from '@shared/types';
+import type { Application, AuditLog, ClubEvent, Page, User } from '@shared/types';
 import { departments } from '@shared/content';
 import { useAuth } from '@/features/auth/auth-provider';
 import { api, send, queryClient } from '@/lib/api';
@@ -31,38 +31,46 @@ export function AdminPage() {
   const [password, setPassword] = useState(false);
   const [search, setSearch] = useState('');
   const [status, setStatus] = useState('all');
+  const [applicationPage, setApplicationPage] = useState(1);
+  const [logPage, setLogPage] = useState(1);
+  const [userPage, setUserPage] = useState(1);
   const [confirm, setConfirm] = useState<{ title: string; path: string } | null>(null);
   const [busy, setBusy] = useState(false);
   const events = useQuery({
     queryKey: ['events'],
-    queryFn: () => api<ClubEvent[]>('/events'),
+    queryFn: ({ signal }) => api<ClubEvent[]>('/events', { signal }),
     enabled: allowed,
   });
   const applications = useQuery({
-    queryKey: ['applications'],
-    queryFn: () => api<Application[]>('/admin/applications'),
+    queryKey: ['applications', applicationPage, search, status],
+    queryFn: ({ signal }) =>
+      api<Page<Application>>(
+        `/admin/applications?page=${applicationPage}&q=${encodeURIComponent(search)}&status=${status}`,
+        { signal },
+      ),
     enabled: allowed && tab === 'applications',
   });
   const logs = useQuery({
-    queryKey: ['logs'],
-    queryFn: () => api<AuditLog[]>('/admin/logs'),
+    queryKey: ['logs', logPage],
+    queryFn: ({ signal }) => api<Page<AuditLog>>(`/admin/logs?page=${logPage}`, { signal }),
     enabled: allowed && tab === 'logs',
   });
   const users = useQuery({
-    queryKey: ['admin-users'],
-    queryFn: () => api<User[]>('/admin/users'),
+    queryKey: ['admin-users', userPage],
+    queryFn: ({ signal }) => api<Page<User>>(`/admin/users?page=${userPage}`, { signal }),
     enabled: user?.role === 'superadmin' && tab === 'users',
   });
-  const applicationItems = applications.data?.filter(
-    (a) =>
-      (status === 'all' || a.status === status) &&
-      `${a.nickname}${a.realName}${a.studentId}${a.qq}`.includes(search),
-  );
+  const applicationItems = applications.data?.items || [];
   async function mutate(path: string, data?: unknown, method = 'PATCH') {
     setBusy(true);
     try {
       await send(path, data, method);
-      await queryClient.invalidateQueries();
+      const keys = path.startsWith('/admin/applications')
+        ? [['applications']]
+        : path.startsWith('/admin/events')
+          ? [['events'], ['logs'], ['stats']]
+          : [['admin-users'], ['logs']];
+      await Promise.all(keys.map((queryKey) => queryClient.invalidateQueries({ queryKey })));
       toast.success('已保存');
       setConfirm(null);
     } catch (e) {
@@ -71,7 +79,7 @@ export function AdminPage() {
       setBusy(false);
     }
   }
-  
+
   if (loading) return <Loading />;
   if (!allowed)
     return (
@@ -185,19 +193,25 @@ export function AdminPage() {
         <TabsContent value="applications">
           <div className="admin-toolbar">
             <h2>
-              入社申请 <small>{applicationItems?.length || 0}</small>
+              入社申请 <small>{applications.data?.total || 0}</small>
             </h2>
             <div className="admin-filters">
               <Input
                 placeholder="搜索姓名、学号或 QQ"
                 aria-label="搜索入社申请"
                 value={search}
-                onChange={(e) => setSearch(e.target.value)}
+                onChange={(e) => {
+                  setSearch(e.target.value);
+                  setApplicationPage(1);
+                }}
               />
               <Select
                 aria-label="筛选申请状态"
                 value={status}
-                onChange={(e) => setStatus(e.target.value)}
+                onChange={(e) => {
+                  setStatus(e.target.value);
+                  setApplicationPage(1);
+                }}
               >
                 <option value="all">全部状态</option>
                 <option value="pending">待联系</option>
@@ -258,21 +272,26 @@ export function AdminPage() {
               ))}
             </div>
           )}
+          <AdminPager
+            page={applications.data?.page || 1}
+            pages={applications.data?.pages || 1}
+            onChange={setApplicationPage}
+          />
         </TabsContent>
         <TabsContent value="logs">
           <div className="admin-toolbar">
             <h2>最近操作</h2>
-            <span className="micro-copy">最近 200 条</span>
+            <span className="micro-copy">按时间分页</span>
           </div>
           {logs.isPending ? (
             <Loading />
           ) : logs.error ? (
             <ErrorState error={logs.error} retry={() => logs.refetch()} />
-          ) : !logs.data?.length ? (
+          ) : !logs.data?.items.length ? (
             <EmptyState title="还没有操作日志" />
           ) : (
             <div className="log-list">
-              {logs.data.map((l) => (
+              {logs.data.items.map((l) => (
                 <div key={l.id}>
                   <time>{l.createdAt}</time>
                   <span>{l.actor}</span>
@@ -281,6 +300,11 @@ export function AdminPage() {
               ))}
             </div>
           )}
+          <AdminPager
+            page={logs.data?.page || 1}
+            pages={logs.data?.pages || 1}
+            onChange={setLogPage}
+          />
         </TabsContent>
         {user.role === 'superadmin' && (
           <TabsContent value="users">
@@ -297,7 +321,7 @@ export function AdminPage() {
               <ErrorState error={users.error} retry={() => users.refetch()} />
             ) : (
               <div className="user-list">
-                {users.data?.map((u) => (
+                {users.data?.items.map((u) => (
                   <div key={u.id}>
                     <div>
                       <h3>{u.name}</h3>
@@ -339,6 +363,11 @@ export function AdminPage() {
                 ))}
               </div>
             )}
+            <AdminPager
+              page={users.data?.page || 1}
+              pages={users.data?.pages || 1}
+              onChange={setUserPage}
+            />
           </TabsContent>
         )}
       </Tabs>
@@ -365,6 +394,36 @@ export function AdminPage() {
           </div>
         </DialogContent>
       </Dialog>
+    </div>
+  );
+}
+
+function AdminPager({
+  page,
+  pages,
+  onChange,
+}: {
+  page: number;
+  pages: number;
+  onChange: (page: number) => void;
+}) {
+  if (pages <= 1) return null;
+  return (
+    <div className="admin-pager" aria-label="分页">
+      <Button variant="outline" size="sm" disabled={page <= 1} onClick={() => onChange(page - 1)}>
+        上一页
+      </Button>
+      <span>
+        {page} / {pages}
+      </span>
+      <Button
+        variant="outline"
+        size="sm"
+        disabled={page >= pages}
+        onClick={() => onChange(page + 1)}
+      >
+        下一页
+      </Button>
     </div>
   );
 }

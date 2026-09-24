@@ -1,5 +1,5 @@
 import { rows } from '../db/client';
-import { milestoneFilter, listMilestones, type MilestoneQuery } from './milestones';
+import { milestoneFilter, milestonePreviews, type MilestoneQuery } from './milestones';
 import type { MemoryChapter, MemoryGroup, Page } from '../../shared/types';
 
 export async function memoryChapters(query: MilestoneQuery): Promise<MemoryChapter[]> {
@@ -32,23 +32,11 @@ export async function memoryTimeline(
     GROUP BY \`key\`, m.eventId ORDER BY date DESC, \`key\` DESC LIMIT ${limit} OFFSET ${(page - 1) * limit}`,
     args,
   );
-  const items = await Promise.all(
-    groups.map(async (g) => {
-      const preview = await listMilestones(
-        {
-          ...query,
-          page: '1',
-          ...(g.eventId ? { eventId: g.eventId } : { date: g.date, unlinked: true }),
-        },
-        viewer,
-        3,
-      );
-      return {
-        ...g,
-        type: g.eventId ? ('event' as const) : ('day' as const),
-        preview: preview.items,
-      };
-    }),
-  );
+  const previews = await milestonePreviews(groups, query, viewer, 3);
+  const items = groups.map((g) => ({
+    ...g,
+    type: g.eventId ? ('event' as const) : ('day' as const),
+    preview: previews.get(g.eventId ? `event:${g.eventId}` : `day:${g.date}`) || [],
+  }));
   return { items, total: total.total, page, pages: Math.ceil(total.total / limit) };
 }

@@ -13,13 +13,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [open, setOpen] = useState(false);
   const { data, isPending } = useQuery({
     queryKey: ['me'],
-    queryFn: () => api<User | null>('/auth/me'),
+    queryFn: ({ signal }) => api<User | null>('/auth/me', { signal }),
     retry: false,
   });
   async function logout() {
     await send('/auth/logout', {});
     queryClient.setQueryData(['me'], null);
-    await queryClient.invalidateQueries();
+    await Promise.all([
+      queryClient.invalidateQueries({ queryKey: ['events'] }),
+      queryClient.invalidateQueries({ queryKey: ['milestones'] }),
+      queryClient.invalidateQueries({ queryKey: ['wall'] }),
+      queryClient.invalidateQueries({ queryKey: ['member'] }),
+    ]);
   }
   return (
     <AuthContext.Provider

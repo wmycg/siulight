@@ -21,7 +21,7 @@ pnpm dev
 pnpm dev
 ```
 
-`pnpm run setup` 依次执行 Docker Compose 启动与健康检查、开发影子库准备、Prisma 迁移、Client 生成与演示数据填充。重复执行不清空已有内容、不重置密码。数据库以命名 volume 持久化，`pnpm db:down` 不删除数据。
+`pnpm run setup` 依次执行 Docker Compose 启动与健康检查、开发影子库准备、Prisma 迁移和演示数据填充。重复执行不清空已有内容、不重置密码。数据库以命名 volume 持久化，`pnpm db:down` 不删除数据。
 
 ## 演示账号
 
@@ -49,18 +49,17 @@ pnpm dev
 
 ## 数据模型与后续改表
 
-使用 **Prisma 7.10.0** 管理模型、生成 TypeScript Client，并由 Prisma Migrate 保存迁移历史。`prisma/schema.prisma` 是表结构定义，`prisma/migrations` 保存必须一起提交 Git 的 SQL 迁移。数据库中的 `_prisma_migrations` 记录执行结果。现有 API 查询与事务仍使用 `mysql2`，本次没有改写业务查询。
+使用 **Prisma 7.10.0** 管理模型和迁移历史。`prisma/schema.prisma` 是表结构定义，`prisma/migrations` 保存必须一起提交 Git 的 SQL 迁移。数据库中的 `_prisma_migrations` 记录执行结果。业务 API 查询与事务统一使用 `mysql2` 执行参数化 SQL。
 
 开发时修改模型，然后执行：
 
 ```bash
 pnpm db:dev --name add_user_avatar
-pnpm db:generate
 ```
 
 `migrate dev` 使用独立的影子库检查迁移历史；本地 `pnpm run setup` 会创建并授权 `${MYSQL_DATABASE}_shadow`，`.env` 的 `SHADOW_DATABASE_URL` 应指向该库，绝不能指向业务库。它只用于开发，生产部署不需要影子库。
 
-**部署到已准备好 Node、pnpm 和 MySQL 的环境：** 配置 `.env`、安装依赖 `pnpm install --frozen-lockfile` 后执行：
+**部署到已准备好 Node、pnpm 和 MySQL 的环境：** 配置 `.env`（生产必须提供 `DATABASE_URL`、`APP_ORIGIN` 或 `APP_ORIGINS`），安装依赖 `pnpm install --frozen-lockfile` 后执行：
 
 ```bash
 pnpm run deploy
@@ -90,7 +89,7 @@ pnpm dev                 # 开发，http://localhost:3000
 pnpm typecheck           # TypeScript 严格检查
 pnpm test                # 领域校验与密码测试
 pnpm test:integration    # 真实 MySQL 的 API 流程测试
-pnpm build               # 生成 Prisma Client 并构建前后端
+pnpm build               # 构建前后端
 pnpm start               # 应用待执行迁移，再运行生产构建
 pnpm run deploy          # 一条命令：构建 → 迁移 → 启动
 pnpm format              # 格式化源码
@@ -98,7 +97,6 @@ pnpm format:check        # 检查格式
 pnpm db:up               # 启动 MySQL，等待健康检查
 pnpm db:migrate          # Prisma Migrate 应用未执行的版本
 pnpm db:dev --name xxx   # 修改 schema.prisma 后生成并应用开发迁移
-pnpm db:generate         # 按模型生成 TypeScript Client
 pnpm db:status           # 查看迁移状态
 pnpm db:studio           # 数据库可视化管理
 pnpm test:migrations     # 独立临时 MySQL 库验证迁移与部署失败阻断

@@ -1,6 +1,5 @@
 import { useMediaQuery } from '@/hooks/use-media-query';
-import { ScrollStory } from '@/features/home/cinema/scroll-story';
-import { useState } from 'react';
+import { lazy, Suspense, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { ArrowUpRight, Plus } from 'lucide-react';
@@ -18,15 +17,25 @@ import { api } from '@/lib/api';
 import { today } from '@/lib/utils';
 import type { ClubEvent, Milestone, Page, Stats } from '@shared/types';
 import { ErrorState, Loading, EmptyState } from '@/components/states';
+
+const ScrollStory = lazy(() =>
+  import('@/features/home/cinema/scroll-story').then((module) => ({ default: module.ScrollStory })),
+);
 export function HomePage() {
   const reduced = useMediaQuery('(prefers-reduced-motion: reduce)');
   const shortLandscape = useMediaQuery('(max-height: 500px) and (min-aspect-ratio: 1/1)');
-  const events = useQuery({ queryKey: ['events'], queryFn: () => api<ClubEvent[]>('/events') });
+  const events = useQuery({
+    queryKey: ['events'],
+    queryFn: ({ signal }) => api<ClubEvent[]>('/events', { signal }),
+  });
   const memories = useQuery({
     queryKey: ['milestones', 'home'],
-    queryFn: () => api<Page<Milestone>>('/milestones'),
+    queryFn: ({ signal }) => api<Page<Milestone>>('/milestones', { signal }),
   });
-  const stats = useQuery({ queryKey: ['stats'], queryFn: () => api<Stats>('/stats') });
+  const stats = useQuery({
+    queryKey: ['stats'],
+    queryFn: ({ signal }) => api<Stats>('/stats', { signal }),
+  });
   const [event, setEvent] = useState<ClubEvent | null>(null);
   const [memory, setMemory] = useState<Milestone | null>(null);
   const [editing, setEditing] = useState<Milestone>();
@@ -44,37 +53,42 @@ export function HomePage() {
   return (
     <>
       {!reduced && !shortLandscape ? (
-        <ScrollStory
-          events={selectedEvents}
-          memories={memories.data?.items || []}
-          onEvent={setEvent}
-          onMemory={setMemory}
-          eventState={
-            events.isPending ? (
-              <Loading />
-            ) : events.error ? (
-              <ErrorState error={events.error} retry={() => events.refetch()} />
-            ) : (
-              <EmptyState title="下一次相遇，正在酝酿" body="活动发布后，会第一时间出现在这里。" />
-            )
-          }
-          memoryState={
-            memories.isPending ? (
-              <Loading />
-            ) : memories.error ? (
-              <ErrorState error={memories.error} retry={() => memories.refetch()} />
-            ) : (
-              <EmptyState
-                title="故事，等你写下第一笔"
-                action={
-                  <Button asChild>
-                    <Link to="/milestones">写下第一条纪念</Link>
-                  </Button>
-                }
-              />
-            )
-          }
-        />
+        <Suspense fallback={<Loading />}>
+          <ScrollStory
+            events={selectedEvents}
+            memories={memories.data?.items || []}
+            onEvent={setEvent}
+            onMemory={setMemory}
+            eventState={
+              events.isPending ? (
+                <Loading />
+              ) : events.error ? (
+                <ErrorState error={events.error} retry={() => events.refetch()} />
+              ) : (
+                <EmptyState
+                  title="下一次相遇，正在酝酿"
+                  body="活动发布后，会第一时间出现在这里。"
+                />
+              )
+            }
+            memoryState={
+              memories.isPending ? (
+                <Loading />
+              ) : memories.error ? (
+                <ErrorState error={memories.error} retry={() => memories.refetch()} />
+              ) : (
+                <EmptyState
+                  title="故事，等你写下第一笔"
+                  action={
+                    <Button asChild>
+                      <Link to="/milestones">写下第一条纪念</Link>
+                    </Button>
+                  }
+                />
+              )
+            }
+          />
+        </Suspense>
       ) : (
         <>
           <Opening />

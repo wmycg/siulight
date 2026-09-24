@@ -40,11 +40,9 @@ wallRouter.get('/', async (req, res) => {
     `SELECT * FROM wall_notes ${cursor ? 'WHERE id < ?' : ''} ORDER BY id DESC LIMIT 61`,
     cursor ? [cursor] : [],
   );
-  const [count] = await rows<{ total: number }>('SELECT COUNT(*) AS total FROM wall_notes');
   const page = items.slice(0, 60);
   res.json({
     items: page.map((note) => present(note, req)),
-    total: count.total,
     nextCursor: items.length > 60 ? page.at(-1)!.id : null,
   });
 });

@@ -17,7 +17,7 @@ export function EventsPage() {
   const [selected, setSelected] = useState<ClubEvent | null>(null);
   const { data, isPending, error, refetch } = useQuery({
     queryKey: ['events'],
-    queryFn: () => api<ClubEvent[]>('/events'),
+    queryFn: ({ signal }) => api<ClubEvent[]>('/events', { signal }),
   });
   const items = data
     ?.filter(

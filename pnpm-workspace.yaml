@@ -3,4 +3,3 @@ allowBuilds:
   sharp: true
   '@prisma/engines': true
   prisma: true
-  pnpm: true

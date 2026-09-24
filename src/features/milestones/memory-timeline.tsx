@@ -72,13 +72,14 @@ function StoryGroup({
   const detail = useInfiniteQuery({
     queryKey: ['milestones', 'group', filters, month, group.key],
     initialPageParam: 1,
-    queryFn: ({ pageParam }) =>
+    queryFn: ({ pageParam, signal }) =>
       api<Page<Milestone>>(
         endpoint('/milestones', filters, {
           month,
           page: String(pageParam),
           ...(group.eventId ? { eventId: group.eventId } : { date: group.date, unlinked: 'true' }),
         }),
+        { signal },
       ),
     getNextPageParam: (last) => (last.page < last.pages ? last.page + 1 : undefined),
     enabled: expanded,
@@ -218,9 +219,10 @@ function MonthStories({
   const stories = useInfiniteQuery({
     queryKey: ['milestones', 'timeline', filters, month],
     initialPageParam: 1,
-    queryFn: ({ pageParam }) =>
+    queryFn: ({ pageParam, signal }) =>
       api<Page<MemoryGroup>>(
         endpoint('/milestones/timeline', filters, { month, page: String(pageParam) }),
+        { signal },
       ),
     getNextPageParam: (last) => (last.page < last.pages ? last.page + 1 : undefined),
   });

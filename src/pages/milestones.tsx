@@ -35,16 +35,16 @@ export function MilestonesPage() {
   });
   const memories = useQuery({
     queryKey: ['milestones', 'chapters', query.toString()],
-    queryFn: () => api<MemoryChapter[]>(`/milestones/chapters?${query}`),
+    queryFn: ({ signal }) => api<MemoryChapter[]>(`/milestones/chapters?${query}`, { signal }),
     enabled: tab !== 'mine' || !!user,
   });
   const years = useQuery({
     queryKey: ['milestones', 'years'],
-    queryFn: () => api<{ year: number }[]>('/milestones/years'),
+    queryFn: ({ signal }) => api<{ year: number }[]>('/milestones/years', { signal }),
   });
   const member = useQuery({
     queryKey: ['member', id],
-    queryFn: () => api<Member>(`/members/${id}`),
+    queryFn: ({ signal }) => api<Member>(`/members/${id}`, { signal }),
     enabled: !!id,
   });
   useEffect(() => {

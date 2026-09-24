@@ -3,6 +3,38 @@ import type { Member, Milestone, Page } from '../../shared/types';
 import type { z } from 'zod';
 import type { milestoneSchema } from '../../shared/validation';
 import type { RowDataPacket } from 'mysql2/promise';
+type MilestoneRow = Milestone & {
+  authorName: string;
+  authorColor: string;
+  authorBio: string;
+};
+type MilestonePreviewGroup = { eventId: string | null; date: string };
+
+function presentMilestones(
+  items: MilestoneRow[],
+  people: (Member & { milestoneId: string })[],
+): Milestone[] {
+  const participants = new Map<string, Member[]>();
+  for (const { milestoneId, ...person } of people) {
+    const list = participants.get(milestoneId) || [];
+    list.push(person);
+    participants.set(milestoneId, list);
+  }
+  return items.map(({ authorName, authorColor, authorBio, ...m }) => ({
+    ...m,
+    liked: Boolean(m.liked),
+    author: { id: m.authorId, name: authorName, color: authorColor, bio: authorBio },
+    participants: participants.get(m.id) || [],
+  }));
+}
+
+async function loadParticipants(ids: string[]) {
+  if (!ids.length) return [] as (Member & { milestoneId: string })[];
+  return rows<Member & { milestoneId: string }>(
+    `SELECT p.milestoneId,u.id,u.name,u.color,u.bio FROM milestone_participants p JOIN users u ON u.id=p.userId WHERE p.milestoneId IN (${ids.map(() => '?').join(',')}) ORDER BY u.name`,
+    ids,
+  );
+}
 export interface MilestoneQuery {
   kind?: string;
   author?: string;
@@ -63,31 +95,60 @@ export async function listMilestones(
     `SELECT COUNT(*) total FROM milestones m ${clause}`,
     args,
   );
-  const items = await rows<
-    Milestone & { authorName: string; authorColor: string; authorBio: string }
-  >(
+  const items = await rows<MilestoneRow>(
     `SELECT m.*,u.name authorName,u.color authorColor,u.bio authorBio,(SELECT COUNT(*) FROM likes l WHERE l.milestoneId=m.id) likes,EXISTS(SELECT 1 FROM likes l WHERE l.milestoneId=m.id AND l.userId=?) liked FROM milestones m JOIN users u ON u.id=m.authorId ${clause} ORDER BY m.date DESC,m.createdAt DESC,m.id DESC LIMIT ${limit} OFFSET ${(page - 1) * limit}`,
     [viewer, ...args],
   );
-  let people: (Member & { milestoneId: string })[] = [];
-  if (items.length)
-    people = await rows<Member & { milestoneId: string }>(
-      `SELECT p.milestoneId,u.id,u.name,u.color,u.bio FROM milestone_participants p JOIN users u ON u.id=p.userId WHERE p.milestoneId IN (${items.map(() => '?').join(',')}) ORDER BY u.name`,
-      items.map((i) => i.id),
-    );
+  const people = await loadParticipants(items.map((i) => i.id));
   return {
-    items: items.map(({ authorName, authorColor, authorBio, ...m }) => ({
-      ...m,
-      liked: Boolean(m.liked),
-      author: { id: m.authorId, name: authorName, color: authorColor, bio: authorBio },
-      participants: people
-        .filter((p) => p.milestoneId === m.id)
-        .map(({ milestoneId: _, ...person }) => person),
-    })),
+    items: presentMilestones(items, people),
     total: count.total,
     page,
     pages: Math.ceil(count.total / limit),
   };
+}
+
+export async function milestonePreviews(
+  groups: MilestonePreviewGroup[],
+  query: MilestoneQuery,
+  viewer = '',
+  limit = 3,
+) {
+  if (!groups.length) return new Map<string, Milestone[]>();
+  const baseQuery = { ...query, eventId: undefined, date: undefined, unlinked: undefined };
+  const { clause, args } = milestoneFilter(baseQuery);
+  const groupConditions = groups.map((group) =>
+    group.eventId ? 'm.eventId=?' : '(m.eventId IS NULL AND m.date=?)',
+  );
+  const groupArgs = groups.flatMap((group) => [group.eventId || group.date]);
+  const groupKey = "IF(m.eventId IS NULL, CONCAT('day:',m.date), CONCAT('event:',m.eventId))";
+  const where = clause
+    ? `${clause} AND (${groupConditions.join(' OR ')})`
+    : `WHERE ${groupConditions.join(' OR ')}`;
+  const rowsWithGroup = await rows<MilestoneRow & { groupKey: string; rowNumber: number }>(
+    `SELECT * FROM (
+      SELECT m.*,u.name authorName,u.color authorColor,u.bio authorBio,
+      (SELECT COUNT(*) FROM likes l WHERE l.milestoneId=m.id) likes,
+      EXISTS(SELECT 1 FROM likes l WHERE l.milestoneId=m.id AND l.userId=?) liked,
+      ${groupKey} groupKey,
+      ROW_NUMBER() OVER (PARTITION BY ${groupKey} ORDER BY m.date DESC,m.createdAt DESC,m.id DESC) rowNumber
+      FROM milestones m JOIN users u ON u.id=m.authorId ${where}
+    ) ranked WHERE rowNumber <= ${limit}
+    ORDER BY date DESC,createdAt DESC,id DESC`,
+    [viewer, ...args, ...groupArgs],
+  );
+  const people = await loadParticipants(rowsWithGroup.map((item) => item.id));
+  const presented = presentMilestones(
+    rowsWithGroup.map(({ groupKey: _groupKey, rowNumber: _rowNumber, ...item }) => item),
+    people,
+  );
+  const previews = new Map<string, Milestone[]>();
+  rowsWithGroup.forEach((item, index) => {
+    const list = previews.get(item.groupKey) || [];
+    list.push(presented[index]);
+    previews.set(item.groupKey, list);
+  });
+  return previews;
 }
 export async function saveMilestone(
   id: string,

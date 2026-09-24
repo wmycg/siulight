@@ -42,12 +42,12 @@ export function MilestoneEditor({
   const [error, setError] = useState('');
   const { data: people } = useQuery({
     queryKey: ['members', search],
-    queryFn: () => api<Member[]>(`/members?q=${encodeURIComponent(search)}`),
+    queryFn: ({ signal }) => api<Member[]>(`/members?q=${encodeURIComponent(search)}`, { signal }),
     enabled: open,
   });
   const { data: events, isError: eventsFailed } = useQuery({
     queryKey: ['events'],
-    queryFn: () => api<ClubEvent[]>('/events'),
+    queryFn: ({ signal }) => api<ClubEvent[]>('/events', { signal }),
     enabled: open,
   });
   async function submit(e: FormEvent<HTMLFormElement>) {

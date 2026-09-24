@@ -297,7 +297,7 @@ test('MySQL full-stack workflows, persistence, permissions and atomic writes', a
         eventId = r.data.id;
         createdEvents.push(eventId);
         const apps = await request('/admin/applications', 'GET', undefined, 'admin');
-        assert.ok(apps.data.some((a: any) => a.id === createdApplications[0]));
+        assert.ok(apps.data.items.some((a: any) => a.id === createdApplications[0]));
         assert.equal(
           (
             await request(
@@ -315,7 +315,7 @@ test('MySQL full-stack workflows, persistence, permissions and atomic writes', a
         );
         assert.equal(stored.status, 'accepted');
         assert.ok(
-          (await request('/admin/logs', 'GET', undefined, 'admin')).data.some((l: any) =>
+          (await request('/admin/logs', 'GET', undefined, 'admin')).data.items.some((l: any) =>
             l.action.includes(suffix),
           ),
         );

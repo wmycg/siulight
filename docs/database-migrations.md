@@ -1,12 +1,12 @@
 # 数据库模型、迁移与部署
 
-项目使用 pnpm，Prisma CLI 与 Client 固定为 7.10.0。
+项目使用 pnpm，Prisma CLI 固定为 7.10.0；业务查询使用 mysql2。
 
 - `prisma/schema.prisma`：模型、字段、关系、索引与数据库类型。
 - `prisma/migrations/*/migration.sql`：按版本提交的实际数据库变更。
 - `prisma.config.ts`：读取 `.env` 的连接信息。
 - `_prisma_migrations`：数据库内的迁移执行历史。
-- `server/generated/prisma`：生成的 TypeScript Client，忽略 Git，每次构建重新生成。
+- 业务服务使用 `mysql2` 执行参数化 SQL；Prisma CLI 只负责应用迁移，不生成业务 Client。
 - `server/db/client.ts`：现有 mysql2 查询与事务连接；本次未改写业务查询。
 
 原 `schema_migrations`、`server/db/migrate.ts` 和 `server/db/schema.sql` 已移除。经用户明确同意，本地开发库已清空并用 Prisma 初始迁移重建，随后重新填充演示数据。
@@ -15,7 +15,7 @@
 
 1. 修改 `prisma/schema.prisma`。
 2. 生成并应用迁移：`pnpm db:dev --name add_user_avatar`。
-3. 重新生成类型：`pnpm db:generate`。
+3. 类型检查：`pnpm typecheck`。
 4. 检查生成的 SQL，验证业务，再将模型和迁移一起提交 Git。
 
 示例：在 `User` 模型增加 `avatar String @default("") @db.VarChar(255)`。迁移会为已有记录设置空字符串，不需要删除用户表。
@@ -26,7 +26,7 @@
 pnpm db:dev --create-only --name change_user_profile
 # 检查和编辑新 migration.sql，包括必要的数据搬迁。
 pnpm db:dev
-pnpm db:generate
+pnpm typecheck
 ```
 
 本地开发的影子数据库由 `pnpm run setup` 创建。`.env` 的 `SHADOW_DATABASE_URL` 指向独立的 `siulight_shadow`，不应指向业务库；更改 `MYSQL_DATABASE` 时同步调整这两个 URL。已存在 Docker volume 时可执行 `pnpm db:shadow` 补建影子库。生产环境不需要设置此变量。
@@ -40,7 +40,7 @@ pnpm install --frozen-lockfile
 pnpm run deploy
 ```
 
-`pnpm run deploy` 依次执行生成 Client、类型检查、前后端构建、`prisma migrate deploy`、生产服务启动。构建或迁移失败都会中止链路。更新已构建的产物时，`pnpm start` 同样先迁移再启动。命令以前台方式运行服务；线上可交给服务管理器运行。
+`pnpm run deploy` 依次执行类型检查、前后端构建、`prisma migrate deploy`、生产服务启动。构建或迁移失败都会中止链路。更新已构建的产物时，`pnpm start` 同样先迁移再启动。命令以前台方式运行服务；线上可交给服务管理器运行。
 
 发布物保留 `dist/`、`prisma/`、`prisma.config.ts`、`package.json`、`pnpm-lock.yaml`、`.env` 与生产依赖。Prisma CLI 属于生产依赖，因此只安装生产依赖的运行环境也可迁移。`pnpm run deploy` 的构建阶段需要开发依赖，已构建环境用 `pnpm start`。
 

@@ -32,7 +32,7 @@ export function AboutPage() {
           <p>
             一个以 ACGN 为坐标的大学社团。
             <br />
-            也是一群愿意为热爱，多走一步的普通人。
+            也是一群愿意为热爱，多走一步的人。
           </p>
         </Reveal>
       </section>

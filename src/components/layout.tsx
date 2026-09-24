@@ -1,6 +1,5 @@
-import { useLayoutEffect, useState, type MouseEvent } from 'react';
-import { flushSync } from 'react-dom';
-import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
+import { useLayoutEffect, useState } from 'react';
+import { Link, Outlet, useLocation } from 'react-router-dom';
 import { ArrowUpRight, Menu, X, LogOut, Settings } from 'lucide-react';
 import { Button } from './ui/button';
 import { useAuth } from '@/features/auth/auth-provider';
@@ -34,18 +33,12 @@ export function Layout() {
   const { user, openLogin, logout } = useAuth();
   const [menu, setMenu] = useState(false);
   const location = useLocation();
-  const navigate = useNavigate();
   function cancelScrollBeforeNavigation() {
     const root = document.documentElement;
     const previous = root.style.scrollBehavior;
     root.style.scrollBehavior = 'auto';
     window.scrollTo(0, window.scrollY);
     root.style.scrollBehavior = previous;
-  }
-  function go(to: string, event: MouseEvent<HTMLAnchorElement>) {
-    event.preventDefault();
-    cancelScrollBeforeNavigation();
-    flushSync(() => navigate(to));
   }
   useLayoutEffect(() => {
     setMenu(false);
@@ -64,15 +57,14 @@ export function Layout() {
           <Brand />
           <nav aria-label="主导航" className="desktop-nav">
             {navItems.map((i) => (
-              <a
+              <Link
                 key={i.to}
-                href={i.to}
+                to={i.to}
                 className={location.pathname === i.to ? 'active' : undefined}
                 aria-current={location.pathname === i.to ? 'page' : undefined}
-                onClick={(event) => go(i.to, event)}
               >
                 {i.label}
-              </a>
+              </Link>
             ))}
           </nav>
           <div className="header-actions">
@@ -130,19 +122,19 @@ export function Layout() {
         {menu && (
           <nav id="mobile-navigation" className="mobile-nav" aria-label="手机导航">
             {navItems.map((i, n) => (
-              <a
+              <Link
                 key={i.to}
-                href={i.to}
+                to={i.to}
                 className={location.pathname === i.to ? 'active' : undefined}
                 aria-current={location.pathname === i.to ? 'page' : undefined}
-                onClick={(event) => go(i.to, event)}
+                onClick={() => setMenu(false)}
               >
                 <span>
                   <small>0{n + 1}</small>
                   {i.label}
                 </span>
                 <ArrowUpRight size={18} />
-              </a>
+              </Link>
             ))}
             <Link to="/join">
               加入我们

@@ -73,7 +73,7 @@ export function Opening({ immersive = false }: { immersive?: boolean }) {
             transition={{ delay: 0.4, duration: 0.7, ease }}
           >
             <p className="opening-line">
-              热爱，是我们的<span>另一种次元。</span>
+              用热烈的爱与技术<span>将我们连结在一起。</span>
             </p>
             <p className="opening-description">
               从喜欢的角色，到并肩的伙伴。

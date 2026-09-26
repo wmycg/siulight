@@ -14,3 +14,5 @@ storage/
 .pnpm-store/
 
 server/generated/
+
+siulight-images-3.0.0.tar

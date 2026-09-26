@@ -2,7 +2,7 @@
 
 ## 技术与边界
 
-React + TypeScript + Vite 构建浏览器端，Express + TypeScript 提供同源 JSON API，mysql2 连接 MySQL 8.4。pnpm 是唯一包管理器。UI 使用 shadcn/ui 的源码式组织方式（Radix UI、Tailwind CSS、CVA），基础组件保存在 `src/components/ui` 并根据品牌做了外观定制。
+React + TypeScript + Vite 构建浏览器端，Express + TypeScript 提供同源 JSON API，Prisma Client 通过 MariaDB adapter 连接 MySQL 8.4。pnpm 是唯一包管理器。UI 使用 shadcn/ui 的源码式组织方式（Radix UI、Tailwind CSS、CVA），基础组件保存在 `src/components/ui` 并根据品牌做了外观定制。
 
 ```text
 src/

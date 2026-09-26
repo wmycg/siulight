@@ -2,7 +2,7 @@ import { randomBytes } from 'node:crypto';
 import { Router } from 'express';
 import { rateLimit } from 'express-rate-limit';
 import { z } from 'zod';
-import { rows, run } from '../db/client';
+import { prisma } from '../db/client';
 import { tokenHash } from '../middleware/auth';
 import { config } from '../config';
 import { wallNoteSchema } from '../../shared/validation';
@@ -15,18 +15,29 @@ const guestToken = (req: Request) => {
   const value = req.cookies[guestCookie];
   return typeof value === 'string' && /^[a-f0-9]{64}$/.test(value) ? value : null;
 };
-type StoredNote = Omit<WallNote, 'canDelete' | 'registered'> & {
+type StoredNote = {
+  id: number;
+  body: string;
+  nickname: string;
+  color: string;
+  isDemo: boolean;
   userId: string | null;
   guestHash: string | null;
+  createdAt: string | Date;
 };
 function present(note: StoredNote, req: Request): WallNote {
   const { userId, guestHash, ...publicNote } = note;
   const guest = guestToken(req);
+  const createdAt =
+    note.createdAt instanceof Date
+      ? note.createdAt.toISOString()
+      : `${note.createdAt.replace(' ', 'T')}Z`;
   return {
     ...publicNote,
+    color: note.color as WallNote['color'],
     isDemo: Boolean(note.isDemo),
     registered: Boolean(userId),
-    createdAt: `${note.createdAt.replace(' ', 'T')}Z`,
+    createdAt,
     canDelete: Boolean(
       (req.user && (req.user.id === userId || req.user.role !== 'member')) ||
       (guestHash && guest && tokenHash(guest) === guestHash),
@@ -36,10 +47,11 @@ function present(note: StoredNote, req: Request): WallNote {
 const idSchema = z.coerce.number().int().positive().max(2147483647);
 wallRouter.get('/', async (req, res) => {
   const cursor = req.query.cursor === undefined ? null : idSchema.parse(req.query.cursor);
-  const items = await rows<StoredNote>(
-    `SELECT * FROM wall_notes ${cursor ? 'WHERE id < ?' : ''} ORDER BY id DESC LIMIT 61`,
-    cursor ? [cursor] : [],
-  );
+  const items = await prisma.wallNote.findMany({
+    where: cursor ? { id: { lt: cursor } } : undefined,
+    orderBy: { id: 'desc' },
+    take: 61,
+  });
   const page = items.slice(0, 60);
   res.json({
     items: page.map((note) => present(note, req)),
@@ -69,23 +81,21 @@ wallRouter.post(
       });
       req.cookies[guestCookie] = guest;
     }
-    const result = await run(
-      'INSERT INTO wall_notes (body,nickname,color,userId,guestHash) VALUES (?,?,?,?,?)',
-      [
-        data.body,
-        req.user?.name || data.nickname || '路过的同好',
-        data.color,
-        req.user?.id || null,
-        !req.user && guest ? tokenHash(guest) : null,
-      ],
-    );
-    const [note] = await rows<StoredNote>('SELECT * FROM wall_notes WHERE id=?', [result.insertId]);
+    const note = await prisma.wallNote.create({
+      data: {
+        body: data.body,
+        nickname: req.user?.name || data.nickname || '路过的同好',
+        color: data.color,
+        userId: req.user?.id || null,
+        guestHash: !req.user && guest ? tokenHash(guest) : null,
+      },
+    });
     res.status(201).json(present(note, req));
   },
 );
 wallRouter.delete('/:id', async (req, res) => {
   const id = idSchema.parse(req.params.id);
-  const [note] = await rows<StoredNote>('SELECT * FROM wall_notes WHERE id=?', [id]);
+  const note = await prisma.wallNote.findUnique({ where: { id } });
   if (!note) {
     res.status(404).json({ message: '这张纸条已经被收走了' });
     return;
@@ -94,6 +104,6 @@ wallRouter.delete('/:id', async (req, res) => {
     res.status(403).json({ message: '只能收回自己的纸条' });
     return;
   }
-  await run('DELETE FROM wall_notes WHERE id=?', [id]);
+  await prisma.wallNote.delete({ where: { id } });
   res.json({ ok: true });
 });

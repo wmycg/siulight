@@ -49,7 +49,7 @@ pnpm dev
 
 ## 数据模型与后续改表
 
-使用 **Prisma 7.10.0** 管理模型和迁移历史。`prisma/schema.prisma` 是表结构定义，`prisma/migrations` 保存必须一起提交 Git 的 SQL 迁移。数据库中的 `_prisma_migrations` 记录执行结果。业务 API 查询与事务统一使用 `mysql2` 执行参数化 SQL。
+使用 **Prisma 7.10.0** 管理模型、迁移历史和运行时数据库访问。`prisma/schema.prisma` 是表结构定义，`prisma/migrations` 保存必须一起提交 Git 的 SQL 迁移。业务 API 通过生成的 Prisma Client 访问 MySQL；复杂报表查询保留在 `server/db/client.ts` 的 Prisma `$queryRaw` 兼容层中。数据库中的 `_prisma_migrations` 记录迁移执行结果。
 
 开发时修改模型，然后执行：
 

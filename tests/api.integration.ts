@@ -6,7 +6,7 @@ import { rm } from 'node:fs/promises';
 import path from 'node:path';
 import sharp from 'sharp';
 import { app, apiErrorHandler } from '../server/app';
-import { pool, rows, run } from '../server/db/client';
+import { prisma, rows, run } from '../server/db/client';
 import { hashPassword } from '../server/services/password';
 import type { Page, Milestone, User, Member } from '../shared/types';
 app.use(apiErrorHandler);
@@ -424,6 +424,6 @@ test('MySQL full-stack workflows, persistence, permissions and atomic writes', a
     await new Promise<void>((resolve, reject) =>
       server.close((error) => (error ? reject(error) : resolve())),
     );
-    await pool.end();
+    await prisma.$disconnect();
   }
 });

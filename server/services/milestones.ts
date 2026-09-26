@@ -1,8 +1,7 @@
-import { rows, pool, type SqlValue } from '../db/client';
+import { prisma, rows, toDatabaseDate, type SqlValue } from '../db/client';
 import type { Member, Milestone, Page } from '../../shared/types';
 import type { z } from 'zod';
 import type { milestoneSchema } from '../../shared/validation';
-import type { RowDataPacket } from 'mysql2/promise';
 type MilestoneRow = Milestone & {
   authorName: string;
   authorColor: string;
@@ -156,64 +155,53 @@ export async function saveMilestone(
   data: z.infer<typeof milestoneSchema>,
   update: boolean,
 ) {
-  const connection = await pool.getConnection();
-  try {
-    await connection.beginTransaction();
+  await prisma.$transaction(async (tx) => {
     if (data.eventId) {
-      const [events] = await connection.execute<RowDataPacket[]>(
-        'SELECT id FROM events WHERE id=? FOR SHARE',
-        [data.eventId],
-      );
-      if (!events.length)
-        throw Object.assign(new Error('关联的活动已不存在，请重新选择'), { status: 400 });
+      const event = await tx.event.findUnique({
+        where: { id: data.eventId },
+        select: { id: true },
+      });
+      if (!event) throw Object.assign(new Error('关联的活动已不存在，请重新选择'), { status: 400 });
     }
     const participants = [...new Set([authorId, ...data.participantIds])];
-    const [people] = await connection.execute<RowDataPacket[]>(
-      `SELECT id FROM users WHERE id IN (${participants.map(() => '?').join(',')})`,
-      participants,
-    );
+    const people = await tx.user.findMany({
+      where: { id: { in: participants } },
+      select: { id: true },
+    });
     if (people.length !== participants.length)
       throw Object.assign(new Error('部分参与者已不存在，请重新选择'), { status: 400 });
     if (update) {
-      await connection.execute(
-        'UPDATE milestones SET title=?,body=?,date=?,kind=?,category=?,image=?,eventId=? WHERE id=?',
-        [
-          data.title,
-          data.body,
-          data.date,
-          data.kind,
-          data.category,
-          data.image,
-          data.eventId || null,
-          id,
-        ],
-      );
-      await connection.execute('DELETE FROM milestone_participants WHERE milestoneId=?', [id]);
-    } else
-      await connection.execute(
-        'INSERT INTO milestones (id,authorId,title,body,date,kind,category,image,eventId) VALUES (?,?,?,?,?,?,?,?,?)',
-        [
+      await tx.milestone.update({
+        where: { id },
+        data: {
+          title: data.title,
+          body: data.body,
+          date: toDatabaseDate(data.date),
+          kind: data.kind,
+          category: data.category,
+          image: data.image,
+          eventId: data.eventId || null,
+        },
+      });
+      await tx.milestoneParticipant.deleteMany({ where: { milestoneId: id } });
+    } else {
+      await tx.milestone.create({
+        data: {
           id,
           authorId,
-          data.title,
-          data.body,
-          data.date,
-          data.kind,
-          data.category,
-          data.image,
-          data.eventId || null,
-        ],
-      );
-    for (const person of participants)
-      await connection.execute(
-        'INSERT INTO milestone_participants (milestoneId,userId) VALUES (?,?)',
-        [id, person],
-      );
-    await connection.commit();
-  } catch (error) {
-    await connection.rollback();
-    throw error;
-  } finally {
-    connection.release();
-  }
+          title: data.title,
+          body: data.body,
+          date: toDatabaseDate(data.date),
+          kind: data.kind,
+          category: data.category,
+          image: data.image,
+          eventId: data.eventId || null,
+        },
+      });
+    }
+    await tx.milestoneParticipant.createMany({
+      data: participants.map((userId) => ({ milestoneId: id, userId })),
+      skipDuplicates: true,
+    });
+  });
 }

@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto';
-import { rows, run, pool } from './client';
+import { prisma, closeDatabase, toDatabaseDate } from './client';
 import { hashPassword } from '../services/password';
 import { saveMilestone } from '../services/milestones';
 import type { Member } from '../../shared/types';
@@ -58,23 +58,25 @@ const accounts = [
 try {
   const members: Member[] = [];
   for (const account of accounts) {
-    let [user] = await rows<Member>('SELECT id,name,color,bio FROM users WHERE email=?', [
-      account.email,
-    ]);
+    let user = await prisma.user.findUnique({
+      where: { email: account.email },
+      select: { id: true, name: true, color: true, bio: true },
+    });
     if (!user) {
       const id = randomUUID();
-      await run(
-        'INSERT INTO users (id,email,name,role,color,bio,passwordHash) VALUES (?,?,?,?,?,?,?)',
-        [
+      await prisma.user.create({
+        data: {
           id,
-          account.email,
-          account.name,
-          account.role,
-          account.color,
-          account.bio,
-          await hashPassword(account.role === 'superadmin' ? adminPassword : memberPassword),
-        ],
-      );
+          email: account.email,
+          name: account.name,
+          role: account.role as 'member' | 'admin' | 'superadmin',
+          color: account.color,
+          bio: account.bio,
+          passwordHash: await hashPassword(
+            account.role === 'superadmin' ? adminPassword : memberPassword,
+          ),
+        },
+      });
       user = { id, name: account.name, color: account.color, bio: account.bio };
     }
     members.push(user);
@@ -122,12 +124,21 @@ try {
     },
   ];
   for (const e of events) {
-    const [found] = await rows('SELECT id FROM events WHERE title=?', [e.title]);
+    const found = await prisma.event.findFirst({ where: { title: e.title }, select: { id: true } });
     if (!found)
-      await run(
-        'INSERT INTO events (id,title,date,place,brief,body,image,category,capacity) VALUES (?,?,?,?,?,?,?,?,?)',
-        [randomUUID(), e.title, e.date, e.place, e.brief, e.body, e.image, e.category, e.capacity],
-      );
+      await prisma.event.create({
+        data: {
+          id: randomUUID(),
+          title: e.title,
+          date: toDatabaseDate(e.date),
+          place: e.place,
+          brief: e.brief,
+          body: e.body,
+          image: e.image,
+          category: e.category,
+          capacity: e.capacity,
+        },
+      });
   }
   const memories = [
     {
@@ -192,7 +203,10 @@ try {
     },
   ];
   for (const m of memories) {
-    const [found] = await rows('SELECT id FROM milestones WHERE title=?', [m.title]);
+    const found = await prisma.milestone.findFirst({
+      where: { title: m.title },
+      select: { id: true },
+    });
     if (!found)
       await saveMilestone(
         randomUUID(),
@@ -216,5 +230,5 @@ try {
   );
   console.log('演示内容不代表真实社团历史；上线前请替换。账号说明见 README.md。');
 } finally {
-  await pool.end();
+  await closeDatabase();
 }

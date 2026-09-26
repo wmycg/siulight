@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
 import { once } from 'node:events';
 import { app, apiErrorHandler } from '../server/app';
-import { pool, rows, run } from '../server/db/client';
+import { prisma, rows, run } from '../server/db/client';
 import { saveMilestone } from '../server/services/milestones';
 app.use(apiErrorHandler);
 test('Timeline groups real events without duplicating participants or losing crowded days', async () => {
@@ -125,6 +125,6 @@ test('Timeline groups real events without duplicating participants or losing cro
     await run('DELETE FROM events WHERE id=?', [event]);
     for (const id of users) await run('DELETE FROM users WHERE id=?', [id]);
     await new Promise<void>((resolve) => server.close(() => resolve()));
-    await pool.end();
+    await prisma.$disconnect();
   }
 });

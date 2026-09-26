@@ -3,7 +3,7 @@ import { readFile } from 'node:fs/promises';
 import express from 'express';
 import { app, apiErrorHandler } from './app';
 import { config } from './config';
-import { pool } from './db/client';
+import { closeDatabase } from './db/client';
 if (config.production) {
   app.use(express.static(path.resolve('dist/client')));
   app.get('/{*path}', (_req, res) => res.sendFile(path.resolve('dist/client/index.html')));
@@ -25,7 +25,7 @@ const server = app.listen(config.port, '0.0.0.0', () => console.log(`微光漫�
 for (const signal of ['SIGTERM', 'SIGINT'])
   process.on(signal, () => {
     server.close(async () => {
-      await pool.end();
+      await closeDatabase();
       process.exit(0);
     });
   });

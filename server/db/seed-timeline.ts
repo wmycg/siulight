@@ -1,27 +1,26 @@
 import { randomUUID } from 'node:crypto';
-import { rows, run } from './client';
+import { prisma, toDatabaseDate } from './client';
 import { saveMilestone } from '../services/milestones';
 import type { Member } from '../../shared/types';
 
 export async function seedTimeline(members: Member[]) {
   const title = '社团创作日 · 把夏天装进画框';
-  let [event] = await rows<{ id: string }>('SELECT id FROM events WHERE title=?', [title]);
+  let event = await prisma.event.findFirst({ where: { title }, select: { id: true } });
   if (!event) {
     event = { id: randomUUID() };
-    await run(
-      'INSERT INTO events (id,title,date,place,brief,body,image,category,capacity) VALUES (?,?,?,?,?,?,?,?,?)',
-      [
-        event.id,
+    await prisma.event.create({
+      data: {
+        id: event.id,
         title,
-        '2026-09-07',
-        '创作教室 · 演示活动',
-        '画稿、相机和伙伴，一起留下夏末的一天。',
-        '演示活动，用于预览共同故事时间轴，不代表真实社团历史。',
-        '/images/studio.webp',
-        '社团',
-        30,
-      ],
-    );
+        date: toDatabaseDate('2026-09-07'),
+        place: '创作教室 · 演示活动',
+        brief: '画稿、相机和伙伴，一起留下夏末的一天。',
+        body: '演示活动，用于预览共同故事时间轴，不代表真实社团历史。',
+        image: '/images/studio.webp',
+        category: '社团',
+        capacity: 30,
+      },
+    });
   }
   const stories = [
     {
@@ -44,7 +43,10 @@ export async function seedTimeline(members: Member[]) {
     },
   ];
   for (const story of stories) {
-    const [found] = await rows('SELECT id FROM milestones WHERE title=?', [story.title]);
+    const found = await prisma.milestone.findFirst({
+      where: { title: story.title },
+      select: { id: true },
+    });
     if (!found)
       await saveMilestone(
         randomUUID(),

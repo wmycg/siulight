@@ -3,6 +3,7 @@ import { wallRouter } from './routes/wall';
 import cookieParser from 'cookie-parser';
 import helmet from 'helmet';
 import { ZodError } from 'zod';
+import { Prisma } from './generated/prisma/client';
 import { config } from './config';
 import { identify } from './middleware/auth';
 import { authRouter } from './routes/auth';
@@ -65,6 +66,10 @@ export const apiErrorHandler: express.ErrorRequestHandler = (error, _req, res, _
     return;
   }
   if (error.code === 'ER_DUP_ENTRY') {
+    res.status(409).json({ message: '邮箱或学号已被使用，请检查后重试' });
+    return;
+  }
+  if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
     res.status(409).json({ message: '邮箱或学号已被使用，请检查后重试' });
     return;
   }

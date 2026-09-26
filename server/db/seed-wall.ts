@@ -1,4 +1,4 @@
-import { rows, run } from './client';
+import { prisma } from './client';
 import { noteColors } from '../../shared/types';
 
 // Development-only sample content. Every sample is visibly labelled in the UI.
@@ -30,15 +30,18 @@ const notes = [
 ];
 export async function seedWall() {
   for (const [index, [nickname, body]] of notes.entries()) {
-    const [found] = await rows(
-      'SELECT id FROM wall_notes WHERE isDemo=1 AND nickname=? AND body=? LIMIT 1',
-      [nickname, body],
-    );
+    const found = await prisma.wallNote.findFirst({
+      where: { isDemo: true, nickname, body },
+      select: { id: true },
+    });
     if (!found)
-      await run('INSERT INTO wall_notes (body,nickname,color,isDemo) VALUES (?,?,?,1)', [
-        body,
-        nickname,
-        noteColors[index % noteColors.length],
-      ]);
+      await prisma.wallNote.create({
+        data: {
+          body,
+          nickname,
+          color: noteColors[index % noteColors.length],
+          isDemo: true,
+        },
+      });
   }
 }

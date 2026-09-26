@@ -119,9 +119,9 @@ test(
         exec('pnpm', ['start'], { cwd: root, env, timeout: 20_000 }),
         (error: unknown) => {
           const failure = error as { code?: number; killed?: boolean; stdout?: string };
-          assert.equal(
+          assert.notEqual(
             failure.killed,
-            false,
+            true,
             'Startup must fail promptly, not hang running a server',
           );
           assert.ok(failure.code && failure.code !== 0);

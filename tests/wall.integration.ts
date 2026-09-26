@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { once } from 'node:events';
 import { randomUUID, randomBytes } from 'node:crypto';
 import { app, apiErrorHandler } from '../server/app';
-import { pool, rows, run } from '../server/db/client';
+import { prisma, rows, run } from '../server/db/client';
 import { tokenHash } from '../server/middleware/auth';
 
 app.use(apiErrorHandler);
@@ -132,12 +132,11 @@ test('Message wall: guest identity, members, pagination and moderation persist i
       'cursor pagination does not repeat notes, and a new insertion does not shift old pages',
       async () => {
         for (let i = 0; i < 65; i++) {
-          const r = await run('INSERT INTO wall_notes (body,nickname,color) VALUES (?,?,?)', [
-            marker,
-            '分页测试',
-            'sky',
-          ]);
-          ids.push(r.insertId);
+          const note = await prisma.wallNote.create({
+            data: { body: marker, nickname: '分页测试', color: 'sky' },
+            select: { id: true },
+          });
+          ids.push(note.id);
         }
         const first = (await request()).body;
         assert.equal(first.items.length, 60);
@@ -166,6 +165,6 @@ test('Message wall: guest identity, members, pagination and moderation persist i
     for (const id of ids) await run('DELETE FROM wall_notes WHERE id=?', [id]);
     for (const id of users) await run('DELETE FROM users WHERE id=?', [id]);
     await new Promise<void>((resolve) => server.close(() => resolve()));
-    await pool.end();
+    await prisma.$disconnect();
   }
 });

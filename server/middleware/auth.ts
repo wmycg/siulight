@@ -1,7 +1,7 @@
 import { createHash } from 'node:crypto';
 import type { RequestHandler } from 'express';
 import type { User } from '../../shared/types';
-import { rows } from '../db/client';
+import { prisma } from '../db/client';
 declare global {
   namespace Express {
     interface Request {
@@ -12,11 +12,15 @@ declare global {
 export const tokenHash = (token: string) => createHash('sha256').update(token).digest('hex');
 export const identify: RequestHandler = async (req, _res, next) => {
   if (typeof req.cookies.session === 'string') {
-    const [user] = await rows<User>(
-      'SELECT u.id,u.name,u.email,u.role,u.color,u.bio FROM users u JOIN sessions s ON s.userId=u.id WHERE s.tokenHash=? AND s.expiresAt > UTC_TIMESTAMP()',
-      [tokenHash(req.cookies.session)],
-    );
-    req.user = user;
+    const session = await prisma.session.findFirst({
+      where: { tokenHash: tokenHash(req.cookies.session), expiresAt: { gt: new Date() } },
+      select: {
+        users: {
+          select: { id: true, name: true, email: true, role: true, color: true, bio: true },
+        },
+      },
+    });
+    req.user = session?.users;
   }
   next();
 };

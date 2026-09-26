@@ -3,7 +3,7 @@ import { randomUUID } from 'node:crypto';
 import { z } from 'zod';
 import { milestoneSchema, dateSchema } from '../../shared/validation';
 import { authenticated } from '../middleware/auth';
-import { rows, run } from '../db/client';
+import { prisma } from '../db/client';
 import { listMilestones, saveMilestone } from '../services/milestones';
 import { memoryChapters, memoryTimeline } from '../services/memory-timeline';
 import { audit } from '../services/audit';
@@ -44,7 +44,11 @@ milestoneRouter.get('/timeline', async (req, res) => {
   res.json(await memoryTimeline(query, req.user?.id));
 });
 milestoneRouter.get('/years', async (_req, res) =>
-  res.json(await rows('SELECT DISTINCT YEAR(date) year FROM milestones ORDER BY year DESC')),
+  res.json(
+    await prisma.$queryRawUnsafe<{ year: number }[]>(
+      'SELECT DISTINCT YEAR(date) year FROM milestones ORDER BY year DESC',
+    ),
+  ),
 );
 milestoneRouter.post('/', authenticated, async (req, res) => {
   const data = milestoneSchema.parse(req.body);
@@ -59,10 +63,10 @@ milestoneRouter.post('/', authenticated, async (req, res) => {
 milestoneRouter.put('/:id', authenticated, async (req, res) => {
   const id = z.string().uuid().parse(req.params.id);
   const data = milestoneSchema.parse(req.body);
-  const [item] = await rows<{ authorId: string; kind: string }>(
-    'SELECT authorId,kind FROM milestones WHERE id=?',
-    [id],
-  );
+  const item = await prisma.milestone.findUnique({
+    where: { id },
+    select: { authorId: true, kind: true },
+  });
   if (!item) {
     res.status(404).json({ message: '这条纪念已不存在' });
     return;
@@ -76,9 +80,10 @@ milestoneRouter.put('/:id', authenticated, async (req, res) => {
 });
 milestoneRouter.delete('/:id', authenticated, async (req, res) => {
   const id = z.string().uuid().parse(req.params.id);
-  const [item] = await rows<{ authorId: string }>('SELECT authorId FROM milestones WHERE id=?', [
-    id,
-  ]);
+  const item = await prisma.milestone.findUnique({
+    where: { id },
+    select: { authorId: true },
+  });
   if (!item) {
     res.status(404).json({ message: '这条纪念已不存在' });
     return;
@@ -87,20 +92,24 @@ milestoneRouter.delete('/:id', authenticated, async (req, res) => {
     res.status(403).json({ message: '只能删除自己的纪念' });
     return;
   }
-  await run('DELETE FROM milestones WHERE id=?', [id]);
+  await prisma.milestone.delete({ where: { id } });
   if (req.user!.role !== 'member') await audit(req.user!.name, `移除里程碑 ${id}`);
   res.json({ ok: true });
 });
 milestoneRouter.put('/:id/like', authenticated, async (req, res) => {
   const id = z.string().uuid().parse(req.params.id);
   const { liked } = z.object({ liked: z.boolean() }).parse(req.body);
-  const [item] = await rows('SELECT id FROM milestones WHERE id=?', [id]);
+  const item = await prisma.milestone.findUnique({ where: { id }, select: { id: true } });
   if (!item) {
     res.status(404).json({ message: '这条纪念已不存在' });
     return;
   }
   if (liked)
-    await run('INSERT IGNORE INTO likes (milestoneId,userId) VALUES (?,?)', [id, req.user!.id]);
-  else await run('DELETE FROM likes WHERE milestoneId=? AND userId=?', [id, req.user!.id]);
+    await prisma.like.upsert({
+      where: { milestoneId_userId: { milestoneId: id, userId: req.user!.id } },
+      create: { milestoneId: id, userId: req.user!.id },
+      update: {},
+    });
+  else await prisma.like.deleteMany({ where: { milestoneId: id, userId: req.user!.id } });
   res.json({ liked });
 });

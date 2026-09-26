@@ -1,13 +1,13 @@
 # 数据库模型、迁移与部署
 
-项目使用 pnpm，Prisma CLI 固定为 7.10.0；业务查询使用 mysql2。
+项目使用 pnpm，Prisma CLI 和 Prisma Client 固定为 7.10.0；业务查询使用 Prisma Client，复杂报表保留参数化 `$queryRaw`。
 
 - `prisma/schema.prisma`：模型、字段、关系、索引与数据库类型。
 - `prisma/migrations/*/migration.sql`：按版本提交的实际数据库变更。
 - `prisma.config.ts`：读取 `.env` 的连接信息。
 - `_prisma_migrations`：数据库内的迁移执行历史。
-- 业务服务使用 `mysql2` 执行参数化 SQL；Prisma CLI 只负责应用迁移，不生成业务 Client。
-- `server/db/client.ts`：现有 mysql2 查询与事务连接；本次未改写业务查询。
+- 业务服务通过 `server/db/client.ts` 创建 Prisma Client；报名、登录、后台、留言墙等写操作使用 Prisma 模型 API 和事务。
+- `server/db/client.ts`：Prisma Client、连接生命周期、日期转换，以及复杂报表查询的 `$queryRaw` 兼容入口。
 
 原 `schema_migrations`、`server/db/migrate.ts` 和 `server/db/schema.sql` 已移除。经用户明确同意，本地开发库已清空并用 Prisma 初始迁移重建，随后重新填充演示数据。
 
